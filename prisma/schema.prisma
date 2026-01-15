@@ -51,9 +51,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  
-  // Link to our App Data
   schedules     Schedule[]
+  tokens        Int       @default(10)
 }
 
 model VerificationToken {

@@ -52,3 +52,51 @@ export async function loadScheduleFromDB() {
 
   return record ? (record.data as any) : null;
 }
+
+export async function getUserTokens() {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) return 0;
+
+  const user = await prisma.user.findUnique({
+    where: { id: (session.user as any).id },
+    select: { tokens: true }
+  });
+
+  return user?.tokens || 0;
+}
+
+export async function spendTokens(amount: number) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) throw new Error("Unauthorized");
+
+  const userId = (session.user as any).id;
+
+  // 1. Check Balance
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || user.tokens < amount) {
+    return { success: false, error: "Insufficient tokens" };
+  }
+
+  // 2. Deduct Tokens
+  await prisma.user.update({
+    where: { id: userId },
+    data: { tokens: { decrement: amount } }
+  });
+
+  return { success: true, newBalance: user.tokens - amount };
+}
+
+export async function rewardTokens(amount: number) {
+  // In a real app, verify the Ad provider's signature here to prevent cheating!
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) return;
+
+  const userId = (session.user as any).id;
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { tokens: { increment: amount } }
+  });
+  
+  return { success: true };
+}
