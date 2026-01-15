@@ -9,7 +9,7 @@ import { saveScheduleToDB, loadScheduleFromDB, getUserTokens, rewardTokens, gene
 
 // --- CONFIG ---
 const BRAND = {
-  name: "UniPlan Pro",
+  name: "UniPlanner",
   logoColor: "text-blue-600",
   primary: "bg-blue-600",
   primaryHover: "hover:bg-blue-700",
@@ -541,7 +541,7 @@ export default function Home() {
 
       <div className="max-w-[1600px] mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-          <div><h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3"><GraduationCap className={BRAND.logoColor} size={32} /> {BRAND.name}</h1><p className="text-slate-500 font-medium mt-1">Production Ready v1.0</p></div>
+          <div><h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3"><GraduationCap className={BRAND.logoColor} size={32} /> {BRAND.name}</h1></div>
           <div className="flex gap-3 items-center">
              {status === 'authenticated' ? (<div className="flex items-center gap-3 bg-white p-1 pr-4 rounded-full shadow-sm border border-slate-200">{session.user?.image ? (<img src={session.user.image} alt="User" className="w-8 h-8 rounded-full" />) : (<div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: stringToColor(session.user?.name || 'User') }}>{(session.user?.name?.[0] || 'U').toUpperCase()}</div>)}<div className="text-xs text-left"><div className="font-bold text-slate-700">{session.user?.name}</div><div onClick={() => setShowTokenModal(true)} className="text-pink-500 font-bold text-[10px] cursor-pointer hover:underline flex items-center gap-1"><Gem size={10}/> {tokens} Tokens</div></div><button onClick={() => signOut()} className="text-slate-400 hover:text-red-500 ml-2"><LogOut size={16}/></button></div>) : (<button onClick={() => signIn('google')} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2"><LogIn size={16}/> Login to Sync</button>)}
              <div className="h-8 w-px bg-slate-200 mx-1"></div>
