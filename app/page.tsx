@@ -317,8 +317,11 @@ export default function Home() {
   const handleAiSubmit = async () => {
       if (!aiPrompt.trim()) return;
       setIsThinking(true);
+      
       const result = await generateAiFilter(aiPrompt);
-      if (result.success) {
+      
+      // FIX: Check if newBalance is actually a number
+      if (result.success && typeof result.newBalance === 'number') {
           setTokens(result.newBalance);
           setActiveFilter(result.filter);
           setShowSmartGenModal(false);
@@ -332,7 +335,6 @@ export default function Home() {
       }
       setIsThinking(false);
   };
-
   const handleEdit = (name: string) => {
     setEditingName(name);
     setShowAddForm(true);
