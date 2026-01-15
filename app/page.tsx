@@ -22,7 +22,7 @@ const BRAND = {
   accentBorder: "border-emerald-100",
 };
 
-const AD_URL = "https://www.google.com"; // REPLACE THIS with your Adsterra/Monetag Direct Link
+const AD_URL = "https://www.effectivegatecpm.com/z55s8g16?key=0f3485ab8cc62270df1010db9ce1ab33"; // REPLACE THIS with your Adsterra/Monetag Direct Link
 
 const TIME_PRESETS = [
   { label: "Morning (09:00-12:00)", start: "09:00", end: "12:00" },
