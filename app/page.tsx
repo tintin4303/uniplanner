@@ -9,7 +9,7 @@ import { saveScheduleToDB, loadScheduleFromDB } from './actions';
 
 // --- BRANDING ---
 const BRAND = {
-  name: "UniPlan",
+  name: "UniPlan Pro",
   logoColor: "text-blue-600",
   primary: "bg-blue-600",
   primaryHover: "hover:bg-blue-700",
@@ -42,7 +42,6 @@ const timeToMin = (time: string): number => {
 
 const PALETTE = [ "bg-blue-500", "bg-emerald-500", "bg-rose-500", "bg-amber-500", "bg-violet-500", "bg-cyan-500", "bg-pink-500", "bg-teal-500", "bg-orange-500", "bg-indigo-500" ];
 
-// Helper to generate a consistent color based on a string (for avatar bg)
 const stringToColor = (str: string) => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -61,11 +60,18 @@ const TimeSlotGrid = ({ schedule, id, exporting }: { schedule: Subject[], id: st
   const totalCredits = schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
 
   return (
-    <div id={id} className={`${exporting ? 'bg-white' : 'bg-white shadow-xl border border-slate-200'} mb-8 flex flex-col w-full transition-all duration-300`} style={exporting ? { width: '1920px', margin: 0, border: 'none' } : { }}>
-      <div className={`${BRAND.secondary} text-white p-4 md:p-5 flex justify-between items-center border-b border-slate-800`}>
-         <div><div className="font-black text-lg md:text-xl tracking-widest flex items-center gap-2 uppercase"><GraduationCap size={24} className="text-white opacity-80"/> {BRAND.name}</div><div className="text-xs text-slate-400 mt-1">Generated Schedule</div></div>
-         <div className="text-right"><div className={`text-xl md:text-2xl font-bold ${BRAND.accent}`}>{totalCredits} <span className="text-xs md:text-sm font-normal text-slate-400">Credits</span></div><div className="text-[10px] md:text-xs text-slate-400">{schedule.length} Subjects Selected</div></div>
+    <div 
+        id={id} 
+        className={`${exporting ? 'bg-white' : 'bg-white shadow-xl border border-slate-200'} mb-8 flex flex-col w-full transition-all duration-300`} 
+        // Force explicit desktop width during export to ensure high res and full span
+        style={exporting ? { width: '1920px', minWidth: '1920px', margin: 0, border: 'none' } : { }}
+    >
+      <div className={`${BRAND.secondary} text-white p-4 md:p-6 flex justify-between items-center border-b border-slate-800`}>
+         <div><div className="font-black text-lg md:text-2xl tracking-widest flex items-center gap-3 uppercase"><GraduationCap size={28} className="text-white opacity-80"/> {BRAND.name}</div><div className="text-xs text-slate-400 mt-1">Generated Schedule</div></div>
+         <div className="text-right"><div className={`text-xl md:text-3xl font-bold ${BRAND.accent}`}>{totalCredits} <span className="text-xs md:text-lg font-normal text-slate-400">Credits</span></div><div className="text-[10px] md:text-sm text-slate-400">{schedule.length} Subjects Selected</div></div>
       </div>
+      
+      {/* GRID SECTION */}
       <div className="w-full grid bg-slate-50 divide-x divide-slate-200 border-b border-slate-200 grid-cols-[30px_repeat(7,minmax(0,1fr))] sm:grid-cols-[50px_repeat(7,minmax(0,1fr))] lg:grid-cols-[80px_repeat(7,minmax(0,1fr))]">
         <div className="p-1 sm:p-2 lg:p-4 border-b border-slate-200 font-bold text-[8px] sm:text-[10px] lg:text-xs text-slate-400 text-center flex items-center justify-center">TIME</div>
         {DAYS.map(day => (<div key={day} className="p-1 sm:p-2 lg:p-4 border-b border-slate-200 font-bold text-[8px] sm:text-[10px] lg:text-xs text-slate-600 text-center uppercase tracking-wider overflow-hidden"><span className="lg:hidden">{day.substring(0,3)}</span><span className="hidden lg:inline">{day}</span></div>))}
@@ -94,6 +100,8 @@ const TimeSlotGrid = ({ schedule, id, exporting }: { schedule: Subject[], id: st
           </div>
         ))}
       </div>
+
+      {/* DETAILS SECTION */}
       <div className="bg-white p-4 lg:p-8">
         <h3 className="font-bold text-slate-800 text-sm mb-4 lg:mb-6 flex items-center gap-2 uppercase tracking-wider border-b pb-4"><List size={20} className={BRAND.primaryText} /> Selected Subjects Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
@@ -177,25 +185,15 @@ export default function Home() {
   const [exportingId, setExportingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // --- DATA LOADING STRATEGY ---
   useEffect(() => {
     async function initData() {
-      // 1. If logged in, fetch from DB
       if (status === 'authenticated') {
         try {
           const dbData = await loadScheduleFromDB();
-          if (dbData && Array.isArray(dbData)) {
-            setSubjects(dbData);
-          } else {
-            // Optional: If DB is empty, maybe load localstorage? For now, we start clean.
-            setSubjects([]); 
-          }
-        } catch (e) {
-          console.error("DB Load Error", e);
-        }
-      } 
-      // 2. If guest, fetch from LocalStorage
-      else if (status === 'unauthenticated') {
+          if (dbData && Array.isArray(dbData)) setSubjects(dbData);
+          else setSubjects([]); 
+        } catch (e) { console.error("DB Load Error", e); }
+      } else if (status === 'unauthenticated') {
         const saved = localStorage.getItem('next-scheduler-prod-v1');
         if (saved) {
           try {
@@ -210,22 +208,13 @@ export default function Home() {
     initData();
   }, [status]);
 
-  // --- DATA SAVING STRATEGY ---
   const persistData = async (newSubjects: Subject[]) => {
     setSubjects(newSubjects);
-    
     if (status === 'authenticated') {
       setSaving(true);
-      try {
-        await saveScheduleToDB(newSubjects);
-      } catch (e) {
-        console.error("Failed to save to cloud", e);
-        alert("Failed to save to cloud");
-      }
+      try { await saveScheduleToDB(newSubjects); } catch (e) { console.error("Failed to save", e); alert("Failed to save"); }
       setSaving(false);
-    } else {
-      localStorage.setItem('next-scheduler-prod-v1', JSON.stringify(newSubjects));
-    }
+    } else { localStorage.setItem('next-scheduler-prod-v1', JSON.stringify(newSubjects)); }
   };
 
   const toggleSection = (id: string) => persistData(subjects.map(s => s.id === id ? { ...s, active: !s.active } : s));
@@ -238,17 +227,7 @@ export default function Home() {
     const existingColorSubject = subjects.find(s => s.name === nameToRemove);
     let colorToUse = existingColorSubject?.color || PALETTE[new Set(otherSubjects.map(s => s.name)).size % PALETTE.length];
     
-    const newEntries: Subject[] = sections.map(sec => ({
-      id: Math.random().toString(36).substr(2, 9),
-      name: name,
-      section: sec.section,
-      credits: credits,
-      noTime: sec.noTime,
-      classes: sec.classes,
-      color: colorToUse!,
-      active: true,
-    }));
-    
+    const newEntries: Subject[] = sections.map(sec => ({ id: Math.random().toString(36).substr(2, 9), name: name, section: sec.section, credits: credits, noTime: sec.noTime, classes: sec.classes, color: colorToUse!, active: true }));
     persistData([...otherSubjects, ...newEntries]);
     setShowAddForm(false);
     setEditingName(null);
@@ -264,63 +243,59 @@ export default function Home() {
     if (!isLoaded) return [];
     const activeSubjects = subjects.filter(s => s.active);
     if (activeSubjects.length === 0) return [];
-    
     const grouped: Record<string, Subject[]> = activeSubjects.reduce((acc, s) => { (acc[s.name] = acc[s.name] || []).push(s); return acc; }, {} as Record<string, Subject[]>);
     const names = Object.keys(grouped);
     const results: Subject[][] = [];
-
-    const isOverlapping = (c1: ClassSession, c2: ClassSession) => {
-      if (c1.day !== c2.day) return false;
-      return Math.max(timeToMin(c1.start), timeToMin(c2.start)) < Math.min(timeToMin(c1.end), timeToMin(c2.end));
-    };
-
-    const hasConflict = (schedule: Subject[], newSubject: Subject) => {
-      if (newSubject.noTime) return false;
-      for (let existing of schedule) {
-        if (existing.noTime) continue;
-        for (let c1 of existing.classes) {
-          for (let c2 of newSubject.classes) { if (isOverlapping(c1, c2)) return true; }
-        }
-      }
-      return false;
-    };
-
-    const buildSchedule = (index: number, currentSchedule: Subject[]) => {
-      if (results.length >= 50) return;
-      if (index === names.length) { results.push(currentSchedule); return; }
-      const subjectName = names[index];
-      const sections = grouped[subjectName];
-      for (let section of sections) {
-        if (!hasConflict(currentSchedule, section)) { buildSchedule(index + 1, [...currentSchedule, section]); }
-      }
-    };
+    const isOverlapping = (c1: ClassSession, c2: ClassSession) => { if (c1.day !== c2.day) return false; return Math.max(timeToMin(c1.start), timeToMin(c2.start)) < Math.min(timeToMin(c1.end), timeToMin(c2.end)); };
+    const hasConflict = (schedule: Subject[], newSubject: Subject) => { if (newSubject.noTime) return false; for (let existing of schedule) { if (existing.noTime) continue; for (let c1 of existing.classes) { for (let c2 of newSubject.classes) { if (isOverlapping(c1, c2)) return true; } } } return false; };
+    const buildSchedule = (index: number, currentSchedule: Subject[]) => { if (results.length >= 50) return; if (index === names.length) { results.push(currentSchedule); return; } const subjectName = names[index]; const sections = grouped[subjectName]; for (let section of sections) { if (!hasConflict(currentSchedule, section)) { buildSchedule(index + 1, [...currentSchedule, section]); } } };
     buildSchedule(0, []);
     return results;
   }, [subjects, isLoaded]);
 
   const calculateCredits = (schedule: Subject[]) => schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
-  const calculateTotalActiveCredits = () => {
-      const activeNames = new Set();
-      let total = 0;
-      subjects.filter(s => s.active).forEach(s => { if (!activeNames.has(s.name)) { total += (s.credits || 0); activeNames.add(s.name); } });
-      return total;
-  };
+  const calculateTotalActiveCredits = () => { const activeNames = new Set(); let total = 0; subjects.filter(s => s.active).forEach(s => { if (!activeNames.has(s.name)) { total += (s.credits || 0); activeNames.add(s.name); } }); return total; };
 
+  // --- UPDATED EXPORT LOGIC FOR PIXEL-PERFECT PDF ---
   const downloadPDF = async (index: number) => {
     const id = `schedule-option-${index}`;
     setExportingId(id);
+    
+    // Allow React 100ms to render the 1920px version
     setTimeout(async () => {
         const element = document.getElementById(id);
         if (element) {
             try {
-                const dataUrl = await toPng(element, { cacheBust: true, pixelRatio: 2, backgroundColor: '#ffffff' });
-                const pdf = new jsPDF('l', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const imgProps = pdf.getImageProperties(dataUrl);
-                const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, imgHeight);
+                // Capture at 2x ratio for high DPI quality
+                const dataUrl = await toPng(element, { 
+                    cacheBust: true, 
+                    pixelRatio: 2, 
+                    backgroundColor: '#ffffff',
+                    // Explicitly tell toPng the full dimensions we expect
+                    width: 1920,
+                    height: element.offsetHeight // Ensure full height is captured
+                });
+                
+                // Create PDF where 1px = 1 unit. 
+                // This bypasses A4 logic completely and creates a custom page size.
+                // The page is exactly the size of your image.
+                const imgProps = new jsPDF().getImageProperties(dataUrl);
+                const pdfWidth = imgProps.width;
+                const pdfHeight = imgProps.height;
+                
+                const pdf = new jsPDF({
+                    orientation: pdfWidth > pdfHeight ? 'l' : 'p',
+                    unit: 'px',
+                    format: [pdfWidth, pdfHeight]
+                });
+                
+                // Add image at 0,0 filling the whole custom page
+                pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`my-schedule-option-${index + 1}.pdf`);
-            } catch (err) { console.error("Export failed", err); alert("Failed to export PDF."); }
+            } catch (err) { 
+                console.error("Export failed", err); 
+                alert("Failed to export PDF."); 
+            }
         }
         setExportingId(null);
     }, 100);
@@ -331,50 +306,18 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 p-4 lg:p-8 font-sans">
       <div className="max-w-[1600px] mx-auto">
-        
-        {/* HEADER BAR */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-              <GraduationCap className={BRAND.logoColor} size={32} /> {BRAND.name}
-            </h1>
-          </div>
-          
+          <div><h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3"><GraduationCap className={BRAND.logoColor} size={32} /> {BRAND.name}</h1><p className="text-slate-500 font-medium mt-1">Production Ready v1.0</p></div>
           <div className="flex gap-3 items-center">
-             {status === 'authenticated' ? (
-                <div className="flex items-center gap-3 bg-white p-1 pr-4 rounded-full shadow-sm border border-slate-200">
-                    {session.user?.image ? (
-                        <img src={session.user.image} alt="User" className="w-8 h-8 rounded-full" />
-                    ) : (
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: stringToColor(session.user?.name || 'User') }}>
-                            {(session.user?.name?.[0] || 'U').toUpperCase()}
-                        </div>
-                    )}
-                    <div className="text-xs text-left">
-                        <div className="font-bold text-slate-700">{session.user?.name}</div>
-                        <div className="text-slate-400 text-[10px]">Cloud Sync Active {saving && '...'}</div>
-                    </div>
-                    <button onClick={() => signOut()} className="text-slate-400 hover:text-red-500 ml-2"><LogOut size={16}/></button>
-                </div>
-             ) : (
-                <button onClick={() => signIn('google')} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2">
-                    <LogIn size={16}/> Login to Sync
-                </button>
-             )}
-
+             {status === 'authenticated' ? (<div className="flex items-center gap-3 bg-white p-1 pr-4 rounded-full shadow-sm border border-slate-200">{session.user?.image ? (<img src={session.user.image} alt="User" className="w-8 h-8 rounded-full" />) : (<div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: stringToColor(session.user?.name || 'User') }}>{(session.user?.name?.[0] || 'U').toUpperCase()}</div>)}<div className="text-xs text-left"><div className="font-bold text-slate-700">{session.user?.name}</div><div className="text-slate-400 text-[10px]">Cloud Sync Active {saving && '...'}</div></div><button onClick={() => signOut()} className="text-slate-400 hover:text-red-500 ml-2"><LogOut size={16}/></button></div>) : (<button onClick={() => signIn('google')} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2"><LogIn size={16}/> Login to Sync</button>)}
              <div className="h-8 w-px bg-slate-200 mx-1"></div>
-
-            <button onClick={() => { setEditingName(null); setShowAddForm(!showAddForm); }} className={`${BRAND.primary} ${BRAND.primaryHover} text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg flex items-center gap-2`}>
-              <Plus size={18} /> Add Subject
-            </button>
+            <button onClick={() => { setEditingName(null); setShowAddForm(!showAddForm); }} className={`${BRAND.primary} ${BRAND.primaryHover} text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg flex items-center gap-2`}><Plus size={18} /> Add Subject</button>
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           <div className="w-full lg:w-[400px] flex-shrink-0 space-y-6">
-            {showAddForm ? (
-              <AddSubjectForm onSave={handleSaveSubject} onCancel={() => { setShowAddForm(false); setEditingName(null); }} initialName={editingName || undefined} initialCredits={editingName ? subjects.find(s => s.name === editingName)?.credits : undefined} initialSections={editingName ? subjects.filter(s => s.name === editingName) : undefined} />
-            ) : (
+            {showAddForm ? (<AddSubjectForm onSave={handleSaveSubject} onCancel={() => { setShowAddForm(false); setEditingName(null); }} initialName={editingName || undefined} initialCredits={editingName ? subjects.find(s => s.name === editingName)?.credits : undefined} initialSections={editingName ? subjects.filter(s => s.name === editingName) : undefined} />) : (
               <div className="bg-white p-6 rounded-3xl shadow-lg border border-slate-200">
                 <div className="flex justify-between items-center mb-4"><h3 className="font-bold text-sm uppercase text-slate-400">Library</h3><button onClick={() => {if(window.confirm('Clear all?')) persistData([])}} className="text-xs text-red-400">Reset</button></div>
                 {Object.keys(groupedSubjects).length === 0 && <div className="text-center py-10 text-slate-400 text-sm">Library is empty.<br/>{status === 'unauthenticated' && 'Login to load your saved schedule.'}</div>}
@@ -393,13 +336,7 @@ export default function Home() {
                           <div className="flex gap-1"><button onClick={() => handleEdit(name)} className={`p-1 text-slate-300 ${BRAND.primaryHover} hover:text-white rounded`}><Edit2 size={14} /></button><button onClick={() => deleteSubjectGroup(name)} className="p-1 text-slate-300 hover:text-red-500 rounded hover:bg-red-50"><Trash2 size={14} /></button></div>
                         </div>
                         <div className="bg-slate-50 p-2 space-y-1">
-                          {group.map(s => (
-                             <div key={s.id} className={`flex items-center gap-3 p-2 rounded-xl text-xs ${s.active ? 'bg-white shadow-sm text-slate-700' : 'opacity-50 text-slate-400'}`}>
-                                <input type="checkbox" checked={s.active} onChange={() => toggleSection(s.id)} className={`rounded ${BRAND.primaryText} cursor-pointer`}/>
-                                <span className="font-mono font-bold bg-slate-100 px-1 rounded text-[10px]">SEC {s.section}</span>
-                                <div className="flex-1 text-[10px]">{s.noTime ? <span className="italic text-slate-500">No fixed time</span> : s.classes.map((c, i) => (<span key={i} className="mr-2">{c.day.slice(0,3)} {c.start}</span>))}</div>
-                             </div>
-                          ))}
+                          {group.map(s => (<div key={s.id} className={`flex items-center gap-3 p-2 rounded-xl text-xs ${s.active ? 'bg-white shadow-sm text-slate-700' : 'opacity-50 text-slate-400'}`}><input type="checkbox" checked={s.active} onChange={() => toggleSection(s.id)} className={`rounded ${BRAND.primaryText} cursor-pointer`}/><span className="font-mono font-bold bg-slate-100 px-1 rounded text-[10px]">SEC {s.section}</span><div className="flex-1 text-[10px]">{s.noTime ? <span className="italic text-slate-500">No fixed time</span> : s.classes.map((c, i) => (<span key={i} className="mr-2">{c.day.slice(0,3)} {c.start}</span>))}</div></div>))}
                         </div>
                       </div>
                     );
@@ -410,9 +347,7 @@ export default function Home() {
             <div className={`${BRAND.secondary} text-white p-6 rounded-3xl shadow-xl`}>
                <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><BookOpen size={18}/> Summary</h3>
                <div className="flex justify-between items-center mb-2"><span className="text-slate-400 text-sm">Active Subjects</span><span className="text-white font-bold">{Object.values(groupedSubjects).filter(g => g.some(s => s.active)).length}</span></div>
-               {/* Moved Options Available here */}
                <div className="flex justify-between items-center mb-4"><span className="text-slate-400 text-sm">Valid Schedules</span><div className="px-2 py-1 bg-white/10 rounded-lg text-xs font-bold flex items-center gap-2"><CheckCircle size={12} className={BRAND.accent}/> {generatedSchedules.length} Options</div></div>
-               
                <div className="flex justify-between items-center pt-2 border-t border-slate-800"><span className="text-slate-400 text-sm">Total Credits (Possible)</span><span className={`${BRAND.accent} font-black text-xl`}>{calculateTotalActiveCredits()}</span></div>
             </div>
           </div>
