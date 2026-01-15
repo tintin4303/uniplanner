@@ -23,7 +23,7 @@ const BRAND = {
 };
 
 const AD_URL = "https://www.effectivegatecpm.com/z55s8g16?key=0f3485ab8cc62270df1010db9ce1ab33"; // REPLACE THIS with your Adsterra/Monetag Direct Link
-
+const CACHE_KEY = 'uniplan-local-cache-v1';
 const TIME_PRESETS = [
   { label: "Morning (09:00-12:00)", start: "09:00", end: "12:00" },
   { label: "Afternoon (13:30-16:30)", start: "13:30", end: "16:30" }
@@ -260,37 +260,77 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<any>(null);
 
   useEffect(() => {
-    async function initData() {
-      if (status === 'authenticated') {
-        try {
-          const dbData = await loadScheduleFromDB();
-          if (dbData && Array.isArray(dbData)) setSubjects(dbData);
-          else setSubjects([]);
-          const balance = await getUserTokens();
-          setTokens(balance);
-        } catch (e) { console.error("DB Error", e); }
-      } else if (status === 'unauthenticated') {
-        const saved = localStorage.getItem('next-scheduler-prod-v1');
-        if (saved) {
-          try {
-            const parsed = JSON.parse(saved);
-            const migrated = parsed.map((s: any) => ({ ...s, credits: typeof s.credits === 'number' ? s.credits : 3, noTime: s.noTime ?? false }));
-            setSubjects(migrated);
-          } catch (e) { console.error(e); }
-        }
+      async function initData() {
+          // 1. Try to load Local Cache FIRST (Instant UI)
+          const cached = localStorage.getItem(CACHE_KEY);
+          if (cached) {
+              try {
+                  const parsed = JSON.parse(cached);
+                  // Ensure data structure is valid (migration fix)
+                  const migrated = parsed.map((s: any) => ({ 
+                      ...s, 
+                      credits: typeof s.credits === 'number' ? s.credits : 3, 
+                      noTime: s.noTime ?? false 
+                  }));
+                  setSubjects(migrated);
+                  setIsLoaded(true); // Show UI immediately!
+              } catch (e) {
+                  console.error("Cache parse error", e);
+              }
+          }
+
+          // 2. If logged in, fetch FRESH data from Server (Background Sync)
+          if (status === 'authenticated') {
+              try {
+                  // Fetch Tokens (Always need fresh tokens)
+                  const balance = await getUserTokens();
+                  setTokens(balance);
+
+                  // Fetch Schedule
+                  const dbData = await loadScheduleFromDB();
+                  if (dbData && Array.isArray(dbData)) {
+                      // Only update if DB has data
+                      // (Optional: You could compare dbData vs cached here to avoid re-render)
+                      setSubjects(dbData);
+                      // Update cache for next time
+                      localStorage.setItem(CACHE_KEY, JSON.stringify(dbData)); 
+                  }
+              } catch (e) { 
+                  console.error("DB Sync Error", e); 
+              }
+          } else if (status === 'unauthenticated' && !cached) {
+              // Only try legacy load if we didn't find our new cache key
+              const legacy = localStorage.getItem('next-scheduler-prod-v1');
+              if (legacy) {
+                  try {
+                      setSubjects(JSON.parse(legacy));
+                      localStorage.setItem(CACHE_KEY, legacy); // Upgrade to new cache
+                  } catch(e) {}
+              }
+          }
+          
+          setIsLoaded(true);
       }
-      setIsLoaded(true);
-    }
-    initData();
+      
+      initData();
   }, [status]);
 
+  // Replace your existing persistData function with this:
   const persistData = async (newSubjects: Subject[]) => {
+    // 1. Always save to Local Cache instantly
     setSubjects(newSubjects);
+    localStorage.setItem(CACHE_KEY, JSON.stringify(newSubjects));
+
+    // 2. If logged in, sync to Database in background
     if (status === 'authenticated') {
       setSaving(true);
-      try { await saveScheduleToDB(newSubjects); } catch (e) { console.error("Failed to save", e); }
+      try { 
+          await saveScheduleToDB(newSubjects); 
+      } catch (e) { 
+          console.error("Failed to sync to DB", e); 
+      }
       setSaving(false);
-    } else { localStorage.setItem('next-scheduler-prod-v1', JSON.stringify(newSubjects)); }
+    }
   };
 
   // --- TOKEN & AI HANDLERS ---
