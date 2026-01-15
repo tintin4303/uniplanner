@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Trash2, Plus, Save, Calendar, BookOpen, CheckCircle, XCircle, AlertCircle, Edit2, Zap, Clock, Download, List, GraduationCap, LogIn, LogOut, User as UserIcon, Gem, PlayCircle, CreditCard, Sparkles } from 'lucide-react';
+import { Trash2, Plus, Save, BookOpen, CheckCircle, XCircle, AlertCircle, Edit2, Zap, Clock, Download, List, GraduationCap, LogIn, LogOut, Gem, PlayCircle, CreditCard, Sparkles, ExternalLink, Timer } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { useSession, signIn, signOut } from "next-auth/react";
-import { saveScheduleToDB, loadScheduleFromDB, getUserTokens, spendTokens, rewardTokens } from './actions';
+import { saveScheduleToDB, loadScheduleFromDB, getUserTokens, rewardTokens, generateAiFilter } from './actions';
 
 // --- CONFIG ---
 const BRAND = {
@@ -22,6 +22,8 @@ const BRAND = {
   accentBorder: "border-emerald-100",
 };
 
+const AD_URL = "https://www.google.com"; // REPLACE THIS with your Adsterra/Monetag Direct Link
+
 const TIME_PRESETS = [
   { label: "Morning (09:00-12:00)", start: "09:00", end: "12:00" },
   { label: "Afternoon (13:30-16:30)", start: "13:30", end: "16:30" }
@@ -30,23 +32,97 @@ const TIME_PRESETS = [
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const PALETTE = [ "bg-blue-500", "bg-emerald-500", "bg-rose-500", "bg-amber-500", "bg-violet-500", "bg-cyan-500", "bg-pink-500", "bg-teal-500", "bg-orange-500", "bg-indigo-500" ];
 
+// --- UTILITIES ---
+const timeToMin = (time: string): number => { const [h, m] = time.split(':').map(Number); return h * 60 + m; };
+const stringToColor = (str: string) => { let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash); const c = (hash & 0x00FFFFFF).toString(16).toUpperCase(); return '#' + "00000".substring(0, 6 - c.length) + c; };
+
 // --- TYPES ---
 interface ClassSession { day: string; start: string; end: string; }
 interface Subject { id: string; name: string; section: string; credits: number; noTime: boolean; classes: ClassSession[]; color: string; active: boolean; }
 interface FormSection { id: number; section: string; noTime: boolean; classes: ClassSession[]; }
 
-// --- UTILITIES ---
-const timeToMin = (time: string): number => { const [h, m] = time.split(':').map(Number); return h * 60 + m; };
-const stringToColor = (str: string) => { let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash); const c = (hash & 0x00FFFFFF).toString(16).toUpperCase(); return '#' + "00000".substring(0, 6 - c.length) + c; };
-
 // --- COMPONENTS ---
 
-// ... (TimeSlotGrid and AddSubjectForm remain exactly the same as previous version) ...
-// TO SAVE SPACE IN THIS CHAT, I AM OMITTING THE FULL CODE FOR TimeSlotGrid AND AddSubjectForm 
-// PLEASE KEEP THEM EXACTLY AS THEY WERE IN THE PREVIOUS "FULL WIDTH FIX" RESPONSE.
-// I WILL ONLY SHOW THE NEW "HOME" COMPONENT LOGIC BELOW.
+// 1. NEW AD OVERLAY COMPONENT
+const AdOverlay = ({ onClose, onClaim }: { onClose: () => void, onClaim: () => void }) => {
+    const [step, setStep] = useState<'intro' | 'timer' | 'claim'>('intro');
+    const [timeLeft, setTimeLeft] = useState(15);
 
-// (Paste TimeSlotGrid and AddSubjectForm here from previous message)
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (step === 'timer') {
+            interval = setInterval(() => {
+                setTimeLeft((prev) => {
+                    if (prev <= 1) {
+                        setStep('claim');
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [step]);
+
+    const handleStartAd = () => {
+        window.open(AD_URL, '_blank'); // Opens the Ad Link
+        setStep('timer');
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl relative overflow-hidden text-center">
+                {/* Close Button (Only active if not waiting) */}
+                {step !== 'timer' && (
+                    <button onClick={onClose} className="absolute top-4 right-4 text-slate-300 hover:text-slate-500">
+                        <XCircle size={24} />
+                    </button>
+                )}
+
+                {step === 'intro' && (
+                    <div className="space-y-6">
+                        <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                            <Gem size={40} className="text-indigo-600" />
+                        </div>
+                        <h2 className="text-2xl font-black text-slate-800">Watch Ad to Earn</h2>
+                        <p className="text-slate-500">Visit our sponsor for 15 seconds to recharge <strong>+5 Tokens</strong>.</p>
+                        <button onClick={handleStartAd} className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95">
+                            <ExternalLink size={20} /> Visit Sponsor
+                        </button>
+                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Adsterra Secured</p>
+                    </div>
+                )}
+
+                {step === 'timer' && (
+                    <div className="space-y-6 py-8">
+                        <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+                            <svg className="absolute inset-0 w-full h-full animate-spin-slow" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" strokeWidth="8" />
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#4f46e5" strokeWidth="8" strokeDasharray="283" strokeDashoffset={283 - (283 * timeLeft) / 15} strokeLinecap="round" className="transition-all duration-1000 ease-linear" />
+                            </svg>
+                            <span className="text-3xl font-black text-indigo-600">{timeLeft}</span>
+                        </div>
+                        <h2 className="text-xl font-bold text-slate-700">Verifying...</h2>
+                        <p className="text-sm text-slate-500">Please keep the ad tab open.</p>
+                    </div>
+                )}
+
+                {step === 'claim' && (
+                    <div className="space-y-6">
+                        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <CheckCircle size={40} className="text-emerald-500" />
+                        </div>
+                        <h2 className="text-2xl font-black text-slate-800">Reward Unlocked!</h2>
+                        <button onClick={onClaim} className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-lg shadow-lg animate-pulse">
+                            Claim +5 Tokens
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
 const TimeSlotGrid = ({ schedule, id, exporting }: { schedule: Subject[], id: string, exporting?: boolean }) => {
   const START_HOUR = 8;
   const END_HOUR = 20;
@@ -105,6 +181,8 @@ const TimeSlotGrid = ({ schedule, id, exporting }: { schedule: Subject[], id: st
     </div>
   );
 };
+
+interface AddSubjectFormProps { onSave: (name: string, credits: number, sections: FormSection[]) => void; onCancel: () => void; initialName?: string; initialCredits?: number; initialSections?: Subject[]; }
 
 const AddSubjectForm = ({ onSave, onCancel, initialName, initialCredits, initialSections }: AddSubjectFormProps) => {
   const [name, setName] = useState(initialName || '');
@@ -170,11 +248,16 @@ export default function Home() {
   const [exportingId, setExportingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   
-  // NEW STATES FOR MONETIZATION
+  // MONETIZATION STATES
   const [tokens, setTokens] = useState(0);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showSmartGenModal, setShowSmartGenModal] = useState(false);
-  const [smartFilter, setSmartFilter] = useState<'none' | 'no-friday' | 'morning' | 'afternoon'>('none');
+  const [showAdOverlay, setShowAdOverlay] = useState(false); // NEW STATE FOR OVERLAY
+  
+  // AI STATES
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<any>(null);
 
   useEffect(() => {
     async function initData() {
@@ -183,8 +266,6 @@ export default function Home() {
           const dbData = await loadScheduleFromDB();
           if (dbData && Array.isArray(dbData)) setSubjects(dbData);
           else setSubjects([]);
-          
-          // FETCH TOKENS
           const balance = await getUserTokens();
           setTokens(balance);
         } catch (e) { console.error("DB Error", e); }
@@ -212,44 +293,51 @@ export default function Home() {
     } else { localStorage.setItem('next-scheduler-prod-v1', JSON.stringify(newSubjects)); }
   };
 
-  // --- TOKEN LOGIC ---
-  const handleWatchAd = async () => {
-    // 1. Show a loading/spinner for 3 seconds (Simulating ad)
-    const btn = document.getElementById("ad-btn") as HTMLButtonElement;
-    if(btn) { btn.textContent = "Watching Ad..."; btn.disabled = true; }
-    
-    setTimeout(async () => {
-        if(status === 'authenticated') {
-            await rewardTokens(5);
-            setTokens(prev => prev + 5);
-        } else {
-            alert("Login to save tokens!");
-        }
-        if(btn) { btn.textContent = "Watch Ad (+5)"; btn.disabled = false; }
-        setShowTokenModal(false);
-    }, 2000);
+  // --- TOKEN & AI HANDLERS ---
+  
+  // 1. Trigger the Ad Overlay
+  const startAdFlow = () => {
+    if (status !== 'authenticated') return alert("Login to save tokens!");
+    setShowTokenModal(false); // Close the token menu
+    setShowAdOverlay(true);   // Open the Ad Overlay
   };
 
-  const activateSmartGen = async () => {
-      if (status !== 'authenticated') return alert("Please login to use AI features.");
-      if (tokens < 5) {
-          setShowSmartGenModal(false);
-          setShowTokenModal(true);
-          return;
-      }
+  // 2. Handle Claiming Logic inside the Overlay
+  const handleClaimAdReward = async () => {
+    const result = await rewardTokens();
+    if (result.success && typeof result.newBalance === 'number') {
+        setTokens(result.newBalance);
+        setShowAdOverlay(false);
+        alert("Success! +5 Tokens added.");
+    } else {
+        alert(result.error || "Failed to claim reward.");
+    }
+  };
 
-      // Deduct Tokens
-      const result = await spendTokens(5);
+  const handleAiSubmit = async () => {
+      if (!aiPrompt.trim()) return;
+      setIsThinking(true);
+      const result = await generateAiFilter(aiPrompt);
       if (result.success) {
-          setTokens(result.newBalance || 0);
+          setTokens(result.newBalance);
+          setActiveFilter(result.filter);
           setShowSmartGenModal(false);
-          // The filtering happens in 'generatedSchedules' using the 'smartFilter' state
+          setAiPrompt("");
       } else {
-          alert("Insufficient Tokens");
+          alert(result.error || "Something went wrong");
+          if (result.error === "Insufficient tokens") {
+              setShowSmartGenModal(false);
+              setShowTokenModal(true);
+          }
       }
+      setIsThinking(false);
   };
 
-  // --- STANDARD HANDLERS ---
+  const handleEdit = (name: string) => {
+    setEditingName(name);
+    setShowAddForm(true);
+  };
+
   const toggleSection = (id: string) => persistData(subjects.map(s => s.id === id ? { ...s, active: !s.active } : s));
   const toggleSubjectGroup = (name: string, shouldActive: boolean) => persistData(subjects.map(s => s.name === name ? { ...s, active: shouldActive } : s));
   const deleteSubjectGroup = (name: string) => { if (window.confirm(`Delete ${name}?`)) persistData(subjects.filter(s => s.name !== name)); };
@@ -259,7 +347,6 @@ export default function Home() {
     let otherSubjects = subjects.filter(s => s.name !== nameToRemove);
     const existingColorSubject = subjects.find(s => s.name === nameToRemove);
     let colorToUse = existingColorSubject?.color || PALETTE[new Set(otherSubjects.map(s => s.name)).size % PALETTE.length];
-    
     const newEntries: Subject[] = sections.map(sec => ({ id: Math.random().toString(36).substr(2, 9), name: name, section: sec.section, credits: credits, noTime: sec.noTime, classes: sec.classes, color: colorToUse!, active: true }));
     persistData([...otherSubjects, ...newEntries]);
     setShowAddForm(false);
@@ -276,32 +363,76 @@ export default function Home() {
     if (!isLoaded) return [];
     const activeSubjects = subjects.filter(s => s.active);
     if (activeSubjects.length === 0) return [];
+    
     const grouped: Record<string, Subject[]> = activeSubjects.reduce((acc, s) => { (acc[s.name] = acc[s.name] || []).push(s); return acc; }, {} as Record<string, Subject[]>);
     const names = Object.keys(grouped);
     const results: Subject[][] = [];
-    const isOverlapping = (c1: ClassSession, c2: ClassSession) => { if (c1.day !== c2.day) return false; return Math.max(timeToMin(c1.start), timeToMin(c2.start)) < Math.min(timeToMin(c1.end), timeToMin(c2.end)); };
-    const hasConflict = (schedule: Subject[], newSubject: Subject) => { if (newSubject.noTime) return false; for (let existing of schedule) { if (existing.noTime) continue; for (let c1 of existing.classes) { for (let c2 of newSubject.classes) { if (isOverlapping(c1, c2)) return true; } } } return false; };
-    const buildSchedule = (index: number, currentSchedule: Subject[]) => { if (results.length >= 50) return; if (index === names.length) { results.push(currentSchedule); return; } const subjectName = names[index]; const sections = grouped[subjectName]; for (let section of sections) { if (!hasConflict(currentSchedule, section)) { buildSchedule(index + 1, [...currentSchedule, section]); } } };
-    buildSchedule(0, []);
-    
-    // --- SMART AI FILTERING ---
-    if (smartFilter === 'no-friday') {
-        return results.filter(sched => !sched.some(sub => sub.classes.some(cls => cls.day === 'Friday')));
-    }
-    if (smartFilter === 'morning') {
-        return results.filter(sched => sched.every(sub => sub.classes.every(cls => parseInt(cls.start.split(':')[0]) < 12)));
-    }
-    if (smartFilter === 'afternoon') {
-        return results.filter(sched => sched.every(sub => sub.classes.every(cls => parseInt(cls.start.split(':')[0]) >= 12)));
-    }
 
+    const isOverlapping = (c1: ClassSession, c2: ClassSession) => { 
+        if (c1.day !== c2.day) return false; 
+        return Math.max(timeToMin(c1.start), timeToMin(c2.start)) < Math.min(timeToMin(c1.end), timeToMin(c2.end)); 
+    };
+
+    const hasConflict = (schedule: Subject[], newSubject: Subject) => { 
+        if (newSubject.noTime) return false; 
+        for (let existing of schedule) { 
+            if (existing.noTime) continue; 
+            for (let c1 of existing.classes) { 
+                for (let c2 of newSubject.classes) { 
+                    if (isOverlapping(c1, c2)) return true; 
+                } 
+            } 
+        } 
+        return false; 
+    };
+
+    const buildSchedule = (index: number, currentSchedule: Subject[]) => { 
+        if (results.length >= 50) return; 
+        if (index === names.length) { results.push(currentSchedule); return; } 
+        const subjectName = names[index]; 
+        const sections = grouped[subjectName]; 
+        for (let section of sections) { 
+            if (!hasConflict(currentSchedule, section)) { 
+                buildSchedule(index + 1, [...currentSchedule, section]); 
+            } 
+        } 
+    };
+    buildSchedule(0, []);
+
+    if (activeFilter) {
+        return results.filter(sched => {
+            let isValid = true;
+            if (activeFilter.days_off && Array.isArray(activeFilter.days_off)) {
+                const hasForbiddenDay = sched.some(sub => sub.classes.some(cls => activeFilter.days_off.includes(cls.day)));
+                if (hasForbiddenDay) isValid = false;
+            }
+            if (isValid && activeFilter.start_time_after) {
+                const minTime = timeToMin(activeFilter.start_time_after);
+                const hasEarlyClass = sched.some(sub => sub.classes.some(cls => timeToMin(cls.start) < minTime));
+                if (hasEarlyClass) isValid = false;
+            }
+            if (isValid && activeFilter.end_time_before) {
+                const maxTime = timeToMin(activeFilter.end_time_before);
+                const hasLateClass = sched.some(sub => sub.classes.some(cls => timeToMin(cls.end) > maxTime));
+                if (hasLateClass) isValid = false;
+            }
+            if (isValid && activeFilter.same_day && Array.isArray(activeFilter.same_day) && activeFilter.same_day.length > 1) {
+                const targetSubjects = sched.filter(sub => activeFilter.same_day.some((targetName: string) => sub.name.toLowerCase().includes(targetName.toLowerCase())));
+                if (targetSubjects.length === activeFilter.same_day.length) {
+                    const subjectDays = targetSubjects.map(sub => sub.classes.map(c => c.day));
+                    const commonDays = subjectDays.reduce((a, b) => a.filter(c => b.includes(c)));
+                    if (commonDays.length === 0) isValid = false;
+                }
+            }
+            return isValid;
+        });
+    }
     return results;
-  }, [subjects, isLoaded, smartFilter]);
+  }, [subjects, isLoaded, activeFilter]);
 
   const calculateCredits = (schedule: Subject[]) => schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
   const calculateTotalActiveCredits = () => { const activeNames = new Set(); let total = 0; subjects.filter(s => s.active).forEach(s => { if (!activeNames.has(s.name)) { total += (s.credits || 0); activeNames.add(s.name); } }); return total; };
 
-  // --- PDF EXPORT (Pixel Perfect) ---
   const downloadPDF = async (index: number) => {
     const id = `schedule-option-${index}`;
     setExportingId(id);
@@ -325,30 +456,23 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 p-4 lg:p-8 font-sans">
       
-      {/* --- SMART GEN MODAL --- */}
+      {/* --- NEW AD OVERLAY (The "Pop-Up") --- */}
+      {showAdOverlay && (
+          <AdOverlay onClose={() => setShowAdOverlay(false)} onClaim={handleClaimAdReward} />
+      )}
+
+      {/* --- SMART AI MODAL --- */}
       {showSmartGenModal && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full animate-in zoom-in-95">
-                  <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Sparkles className="text-indigo-500 fill-indigo-500"/> Smart Generator</h2>
+              <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full animate-in zoom-in-95 relative overflow-hidden">
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+                  <div className="flex justify-between items-center mb-6 relative z-10">
+                      <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Sparkles className="text-indigo-500 fill-indigo-500"/> Smart AI</h2>
                       <button onClick={() => setShowSmartGenModal(false)}><XCircle className="text-slate-300 hover:text-slate-500"/></button>
                   </div>
-                  <p className="text-slate-500 text-sm mb-6">Use AI logic to filter the best schedules for you. <br/><strong className="text-indigo-600">Cost: 5 Tokens</strong> (You have {tokens})</p>
-                  
-                  <div className="space-y-3">
-                      <button onClick={() => { setSmartFilter('no-friday'); activateSmartGen(); }} className="w-full p-4 border rounded-xl hover:bg-indigo-50 hover:border-indigo-200 font-bold text-slate-700 flex items-center gap-3 text-left transition-all">
-                          <span className="bg-indigo-100 text-indigo-600 p-2 rounded-lg">🚫</span> Give me Fridays Off
-                      </button>
-                      <button onClick={() => { setSmartFilter('morning'); activateSmartGen(); }} className="w-full p-4 border rounded-xl hover:bg-amber-50 hover:border-amber-200 font-bold text-slate-700 flex items-center gap-3 text-left transition-all">
-                          <span className="bg-amber-100 text-amber-600 p-2 rounded-lg">☀️</span> Morning Classes Only
-                      </button>
-                      <button onClick={() => { setSmartFilter('afternoon'); activateSmartGen(); }} className="w-full p-4 border rounded-xl hover:bg-orange-50 hover:border-orange-200 font-bold text-slate-700 flex items-center gap-3 text-left transition-all">
-                          <span className="bg-orange-100 text-orange-600 p-2 rounded-lg">🌅</span> Afternoon Classes Only
-                      </button>
-                      {smartFilter !== 'none' && (
-                          <button onClick={() => { setSmartFilter('none'); setShowSmartGenModal(false); }} className="w-full p-2 text-center text-xs text-slate-400 underline mt-4">Clear Filters</button>
-                      )}
-                  </div>
+                  <p className="text-slate-500 text-sm mb-4">Describe your perfect schedule in plain English. Our AI will filter the options for you.</p>
+                  <textarea className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-32 mb-4" placeholder="e.g., I want Fridays off and I hate waking up before 10am." value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)}/>
+                  <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400">Cost: <span className="text-pink-500">5 Tokens</span></span><button onClick={handleAiSubmit} disabled={isThinking || !aiPrompt} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2">{isThinking ? <><Clock size={16} className="animate-spin"/> Thinking...</> : <><Zap size={16} className="fill-white"/> Generate</>}</button></div>
               </div>
           </div>
       )}
@@ -358,28 +482,59 @@ export default function Home() {
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full animate-in zoom-in-95">
                   <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl font-black text-slate-800 flex items-center gap-2"><Gem className="text-pink-500 fill-pink-500"/> Get More Tokens</h2>
-                      <button onClick={() => setShowTokenModal(false)}><XCircle className="text-slate-300 hover:text-slate-500"/></button>
-                  </div>
-                  
+                    <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                      <Gem className="text-pink-500 fill-pink-500"/> Get More Tokens
+                    </h2>
+                    <button onClick={() => setShowTokenModal(false)}><XCircle className="text-slate-300 hover:text-slate-500"/></button>
+                    </div>
                   <div className="grid grid-cols-1 gap-4">
-                      <div className="border-2 border-dashed border-indigo-200 bg-indigo-50 p-6 rounded-2xl text-center">
-                          <PlayCircle size={48} className="mx-auto text-indigo-500 mb-2"/>
-                          <h3 className="font-bold text-indigo-900">Watch Video Ad</h3>
-                          <p className="text-xs text-indigo-600 mb-4">Support us and earn free tokens.</p>
-                          <button id="ad-btn" onClick={handleWatchAd} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-xl font-bold shadow-lg transition-transform active:scale-95">Watch Ad (+5)</button>
-                      </div>
                       
-                      <div className="border border-slate-200 p-6 rounded-2xl text-center opacity-50 relative">
-                          <div className="absolute top-2 right-2 bg-slate-200 text-slate-500 text-[10px] font-bold px-2 rounded">SOON</div>
-                          <CreditCard size={48} className="mx-auto text-slate-400 mb-2"/>
-                          <h3 className="font-bold text-slate-700">Buy 100 Tokens</h3>
-                          <p className="text-xs text-slate-400 mb-4">Instant refill for power users.</p>
-                          <button disabled className="bg-slate-100 text-slate-400 w-full py-2 rounded-xl font-bold cursor-not-allowed">$0.99 (Coming Soon)</button>
+                      {/* WATCH AD SECTION (UPDATED) */}
+                      <div className="border-2 border-dashed border-indigo-200 bg-indigo-50 p-6 rounded-2xl text-center">
+                        <PlayCircle size={48} className="mx-auto text-indigo-500 mb-2"/>
+                        <h3 className="font-bold text-indigo-900">Watch Ad (+5 Tokens)</h3>
+                        <p className="text-xs text-indigo-600 mb-4">Support us to earn free AI credits.</p>
+                        <button onClick={startAdFlow} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-xl font-bold shadow-lg transition-transform active:scale-95">
+                            Watch Ad
+                        </button>
                       </div>
-                  </div>
+
+                      {/* BUY TOKENS SECTION */}
+                      <div className="border border-slate-200 p-6 rounded-2xl text-center">
+                        <CreditCard size={48} className="mx-auto text-indigo-500 mb-2"/>
+                        <h3 className="font-bold text-indigo-900">Buy 100 Tokens</h3>
+                        <p className="text-xs text-indigo-600 mb-4">Instant refill for power users.</p>
+                        <button 
+                            id="buy-btn"
+                            onClick={async () => {
+                                const btn = document.getElementById("buy-btn") as HTMLButtonElement;
+                                if(btn) { btn.disabled = true; btn.textContent = "Loading..."; }
+                                try {
+                                    const res = await fetch('/api/stripe/checkout', { method: 'POST' });
+                                    const data = await res.json();
+                                    if (data.url) window.location.href = data.url;
+                                } catch(e) {
+                                    alert("Payment failed to initialize");
+                                    if(btn) { btn.disabled = false; btn.textContent = "Buy 100 Tokens ($0.99)"; }
+                                }
+                            }}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-xl font-bold shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            Buy 100 Tokens ($0.99)
+                        </button>
+                      </div>
+                </div>
               </div>
           </div>
+      )}
+
+      {/* --- ACTIVE FILTER BANNER --- */}
+      {activeFilter && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-10 fade-in">
+            <div className="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-4 border border-slate-700">
+                <div className="flex items-center gap-2"><Sparkles size={16} className="text-yellow-400"/><span className="text-sm font-medium">AI Filter Active</span></div><div className="h-4 w-px bg-slate-700"></div><button onClick={() => setActiveFilter(null)} className="text-xs text-slate-400 hover:text-white font-bold">CLEAR</button>
+            </div>
+        </div>
       )}
 
       <div className="max-w-[1600px] mx-auto">
@@ -394,11 +549,11 @@ export default function Home() {
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           <div className="w-full lg:w-[400px] flex-shrink-0 space-y-6">
-            
-            {/* AI BANNER */}
-            <div onClick={() => setShowSmartGenModal(true)} className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 rounded-2xl shadow-xl text-white cursor-pointer hover:scale-[1.02] transition-transform flex items-center gap-4">
+            <div onClick={() => setShowSmartGenModal(true)} className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 rounded-2xl shadow-xl text-white cursor-pointer hover:scale-[1.02] transition-transform flex items-center gap-4 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="bg-white/20 p-2 rounded-lg"><Sparkles size={24} className="text-yellow-300 fill-yellow-300 animate-pulse"/></div>
-                <div><h3 className="font-bold text-sm">Smart Auto-Generate</h3><p className="text-xs text-indigo-100 opacity-80">Use AI to find perfect gaps.</p></div>
+                <div><h3 className="font-bold text-sm">Smart AI Filter</h3><p className="text-xs text-indigo-100 opacity-80">"I want Fridays off..."</p></div>
+                <div className="ml-auto bg-black/20 px-2 py-1 rounded text-[10px] font-bold">5 <Gem size={8} className="inline"/></div>
             </div>
 
             {showAddForm ? (<AddSubjectForm onSave={handleSaveSubject} onCancel={() => { setShowAddForm(false); setEditingName(null); }} initialName={editingName || undefined} initialCredits={editingName ? subjects.find(s => s.name === editingName)?.credits : undefined} initialSections={editingName ? subjects.filter(s => s.name === editingName) : undefined} />) : (
@@ -432,7 +587,6 @@ export default function Home() {
                <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><BookOpen size={18}/> Summary</h3>
                <div className="flex justify-between items-center mb-2"><span className="text-slate-400 text-sm">Active Subjects</span><span className="text-white font-bold">{Object.values(groupedSubjects).filter(g => g.some(s => s.active)).length}</span></div>
                <div className="flex justify-between items-center mb-4"><span className="text-slate-400 text-sm">Valid Schedules</span><div className="px-2 py-1 bg-white/10 rounded-lg text-xs font-bold flex items-center gap-2"><CheckCircle size={12} className={BRAND.accent}/> {generatedSchedules.length} Options</div></div>
-               {smartFilter !== 'none' && <div className="mb-4 bg-indigo-500/20 border border-indigo-500/50 p-2 rounded text-xs text-center text-indigo-300">Filtered: {smartFilter.toUpperCase().replace('-', ' ')}</div>}
                <div className="flex justify-between items-center pt-2 border-t border-slate-800"><span className="text-slate-400 text-sm">Total Credits (Possible)</span><span className={`${BRAND.accent} font-black text-xl`}>{calculateTotalActiveCredits()}</span></div>
             </div>
           </div>

@@ -53,6 +53,7 @@ model User {
   sessions      Session[]
   schedules     Schedule[]
   tokens        Int       @default(10)
+  lastAdReward  DateTime?
 }
 
 model VerificationToken {
