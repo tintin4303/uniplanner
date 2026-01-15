@@ -4,7 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia", // Or whatever version your IDE suggests
+  apiVersion: "2025-12-15.clover", // Or whatever version your IDE suggests
 });
 
 export async function POST() {
