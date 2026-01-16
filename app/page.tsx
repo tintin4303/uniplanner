@@ -22,8 +22,8 @@ const BRAND = {
   accentBorder: "border-emerald-100",
 };
 
-// REPLACE THIS with your Adsterra/Monetag Direct Link
-const AD_URL = process.env.ADSTERRA_URL
+// Adsterra/Monetag Direct Link
+const AD_URL = process.env.NEXT_PUBLIC_ADSTERRA_URL || "#";
 const CACHE_KEY = 'uniplan-local-cache-v1';
 
 const TIME_PRESETS = [
@@ -45,6 +45,7 @@ interface FormSection { id: number; section: string; noTime: boolean; classes: C
 
 // --- COMPONENTS ---
 
+// 1. AD OVERLAY COMPONENT
 const AdOverlay = ({ onClose, onClaim }: { onClose: () => void, onClaim: () => void }) => {
     const [step, setStep] = useState<'intro' | 'timer' | 'claim'>('intro');
     const [timeLeft, setTimeLeft] = useState(15);
@@ -552,7 +553,7 @@ export default function Home() {
                       <button onClick={() => setShowSmartGenModal(false)}><XCircle className="text-slate-300 hover:text-slate-500"/></button>
                   </div>
                   <p className="text-slate-500 text-sm mb-4">Describe your perfect schedule in plain English. Our AI will filter the options for you.</p>
-                  <textarea className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-32 mb-4" placeholder="e.g., Add Python on Fridays 1pm to 4pm" value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)}/>
+                  <textarea className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-32 mb-4" placeholder="e.g., I want Fridays off and I hate waking up before 10am." value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)}/>
                   <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400">Cost: <span className="text-pink-500">5 Tokens</span></span><button onClick={handleAiSubmit} disabled={isThinking || !aiPrompt} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2">{isThinking ? <><Clock size={16} className="animate-spin"/> Thinking...</> : <><Zap size={16} className="fill-white"/> Generate</>}</button></div>
               </div>
           </div>
@@ -622,7 +623,32 @@ export default function Home() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div><h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3"><GraduationCap className={BRAND.logoColor} size={32} /> {BRAND.name}</h1></div>
           <div className="flex gap-3 items-center">
-             {status === 'authenticated' ? (<div className="flex items-center gap-3 bg-white p-1 pr-4 rounded-full shadow-sm border border-slate-200">{session.user?.image ? (<img src={session.user.image} alt="User" className="w-8 h-8 rounded-full" />) : (<div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: stringToColor(session.user?.name || 'User') }}>{(session.user?.name?.[0] || 'U').toUpperCase()}</div>)}<div className="text-xs text-left"><div className="font-bold text-slate-700">{session.user?.name}</div><div onClick={() => setShowTokenModal(true)} className="text-pink-500 font-bold text-[10px] cursor-pointer hover:underline flex items-center gap-1"><Gem size={10}/> {tokens} Tokens</div></div><button onClick={handleLogout} className="text-slate-400 hover:text-red-500 ml-2"><LogOut size={16}/></button></div>) : (<button onClick={() => signIn('google')} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2"><LogIn size={16}/> Login to Sync</button>)}
+             {status === 'loading' ? (
+                <div className="flex items-center gap-3 bg-white p-2 rounded-full shadow-sm border border-slate-200 animate-pulse w-48 h-12"></div>
+             ) : status === 'authenticated' ? (
+                <div className="flex items-center gap-3 bg-white p-1 pr-4 rounded-full shadow-sm border border-slate-200">
+                    {session.user?.image ? (
+                        <img src={session.user.image} alt="User" className="w-8 h-8 rounded-full" />
+                    ) : (
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: stringToColor(session.user?.name || 'User') }}>
+                            {(session.user?.name?.[0] || 'U').toUpperCase()}
+                        </div>
+                    )}
+                    <div className="text-xs text-left">
+                        <div className="font-bold text-slate-700">{session.user?.name}</div>
+                        <div onClick={() => setShowTokenModal(true)} className="text-pink-500 font-bold text-[10px] cursor-pointer hover:underline flex items-center gap-1">
+                            <Gem size={10}/> {tokens} Tokens
+                        </div>
+                    </div>
+                    <button onClick={handleLogout} className="text-slate-400 hover:text-red-500 ml-2" title="Sign Out">
+                        <LogOut size={16}/>
+                    </button>
+                </div>
+             ) : (
+                <button onClick={() => signIn('google')} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2">
+                    <LogIn size={16}/> Login to Sync
+                </button>
+             )}
              <div className="h-8 w-px bg-slate-200 mx-1"></div>
             <button onClick={() => { setEditingName(null); setShowAddForm(!showAddForm); }} className={`${BRAND.primary} ${BRAND.primaryHover} text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg flex items-center gap-2`}><Plus size={18} /> Add Subject</button>
           </div>
@@ -633,7 +659,7 @@ export default function Home() {
             <div onClick={() => setShowSmartGenModal(true)} className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 rounded-2xl shadow-xl text-white cursor-pointer hover:scale-[1.02] transition-transform flex items-center gap-4 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="bg-white/20 p-2 rounded-lg"><Sparkles size={24} className="text-yellow-300 fill-yellow-300 animate-pulse"/></div>
-                <div><h3 className="font-bold text-sm">Smart AI Scheduler</h3><p className="text-xs text-indigo-100 opacity-80">"I want Fridays off..."</p></div>
+                <div><h3 className="font-bold text-sm">Smart AI Filter</h3><p className="text-xs text-indigo-100 opacity-80">"I want Fridays off..."</p></div>
                 <div className="ml-auto bg-black/20 px-2 py-1 rounded text-[10px] font-bold">5 <Gem size={8} className="inline"/></div>
             </div>
 
