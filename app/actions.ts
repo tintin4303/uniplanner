@@ -9,11 +9,10 @@ const prisma = new PrismaClient();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // --- TYPES ---
-export interface AiFilter {
-  days_off?: string[];
-  start_time_after?: string;
-  end_time_before?: string;
-  same_day?: string[];
+export interface AiResponse {
+  action: "FILTER" | "ADD" | "REMOVE" | "UPDATE" | "UNKNOWN";
+  data?: any; // Dynamic payload based on action
+  message?: string; // Feedback message for the user
 }
 
 // --- DATABASE ACTIONS ---
@@ -95,7 +94,7 @@ export async function spendTokens(amount: number) {
   return { success: true, newBalance: user.tokens - amount };
 }
 
-// --- AD REWARD ACTION (With Rate Limiting) ---
+// --- AD REWARD ACTION ---
 
 export async function rewardTokens() {
   const session = await getServerSession(authOptions);
@@ -137,9 +136,9 @@ export async function rewardTokens() {
   return { success: true, newBalance: user.tokens + REWARD_AMOUNT };
 }
 
-// --- AI GENERATION ACTION ---
+// --- ADVANCED AI ACTION ---
 
-export async function generateAiFilter(userPrompt: string) {
+export async function generateAiAction(userPrompt: string, currentSubjects: string[]) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) throw new Error("Unauthorized");
 
@@ -157,32 +156,50 @@ export async function generateAiFilter(userPrompt: string) {
     data: { tokens: { decrement: 5 } }
   });
 
-  // 3. Call AI (Using Llama 3.3)
+  // 3. Call AI (Using Llama 3.3 for logic)
   try {
     const completion = await groq.chat.completions.create({
       messages: [
         {
           role: "system",
-          content: `You are a scheduler assistant. Convert the user's request into a JSON filter object.
+          content: `You are a Schedule Assistant. Analyze the user's request and output a JSON object with an "action" and "data".
           
-          Available JSON fields:
-          - "days_off": array of strings (Full days: "Monday", "Tuesday", etc.)
-          - "start_time_after": string "HH:MM" (24h)
-          - "end_time_before": string "HH:MM" (24h)
-          - "same_day": array of strings (Extract subject codes that MUST be on the same day. e.g. ["CSX4110", "ITX3004"])
+          Current Subjects in Library: ${JSON.stringify(currentSubjects)}
 
-          Example 1: "I hate mornings and want fridays off"
-          Output: { "start_time_after": "11:00", "days_off": ["Friday"] }
+          --- POSSIBLE ACTIONS ---
 
-          Example 2: "Put CSX4210 and MGT1101 on the same day"
-          Output: { "same_day": ["CSX4210", "MGT1101"] }
+          1. **ADD** (User wants to add a new subject)
+             Output: { "action": "ADD", "data": { "name": "Subject Name", "credits": 3, "section": "1" } }
+             * If credits are not mentioned, default to 3.
+             * If section is not mentioned, default to "1".
+
+          2. **REMOVE** (User wants to delete a subject)
+             Output: { "action": "REMOVE", "data": { "name": "Subject Name" } }
+             * Use fuzzy matching to find the closest name from the "Current Subjects" list.
+
+          3. **UPDATE** (User wants to change credits or name)
+             Output: { "action": "UPDATE", "data": { "targetName": "Old Name", "updates": { "credits": 4 } } }
+
+          4. **FILTER** (User wants to filter the GENERATED schedules, e.g., "Fridays off", "No morning classes")
+             Output: { "action": "FILTER", "data": { "days_off": ["Friday"], "start_time_after": "10:00" } }
+             * "days_off": array of strings (Full days: "Monday", "Tuesday", etc.)
+             * "start_time_after": string "HH:MM" (24h)
+             * "end_time_before": string "HH:MM" (24h)
+             * "same_day": array of strings (Extract subject codes that MUST be on the same day)
+
+          --- EXAMPLES ---
+          User: "Add Calculus for 3 credits"
+          JSON: { "action": "ADD", "data": { "name": "Calculus", "credits": 3 } }
+
+          User: "I hate mornings"
+          JSON: { "action": "FILTER", "data": { "start_time_after": "12:00" } }
+
+          User: "Delete History"
+          JSON: { "action": "REMOVE", "data": { "name": "History" } }
 
           Return ONLY valid JSON.`
         },
-        {
-          role: "user",
-          content: userPrompt
-        }
+        { role: "user", content: userPrompt }
       ],
       model: "llama-3.3-70b-versatile",
       temperature: 0,
@@ -190,9 +207,10 @@ export async function generateAiFilter(userPrompt: string) {
     });
 
     const content = completion.choices[0]?.message?.content;
-    const filter = JSON.parse(content || "{}");
+    const result = JSON.parse(content || "{}") as AiResponse;
     
-    return { success: true, filter, newBalance: user.tokens - 5 };
+    return { success: true, result, newBalance: user.tokens - 5 };
+
   } catch (error) {
     console.error("AI Error:", error);
     // Refund tokens on error

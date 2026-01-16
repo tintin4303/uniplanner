@@ -5,7 +5,7 @@ import { Trash2, Plus, Save, BookOpen, CheckCircle, XCircle, AlertCircle, Edit2,
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { useSession, signIn, signOut } from "next-auth/react";
-import { saveScheduleToDB, loadScheduleFromDB, getUserTokens, rewardTokens, generateAiFilter } from './actions';
+import { saveScheduleToDB, loadScheduleFromDB, getUserTokens, rewardTokens, generateAiAction } from './actions';
 
 // --- CONFIG ---
 const BRAND = {
@@ -22,8 +22,10 @@ const BRAND = {
   accentBorder: "border-emerald-100",
 };
 
-const AD_URL = "https://www.effectivegatecpm.com/z55s8g16?key=0f3485ab8cc62270df1010db9ce1ab33"; // REPLACE THIS with your Adsterra/Monetag Direct Link
+// REPLACE THIS with your Adsterra/Monetag Direct Link
+const AD_URL = "https://www.effectivegatecpm.com/z55s8g16?key=0f3485ab8cc62270df1010db9ce1ab33"; 
 const CACHE_KEY = 'uniplan-local-cache-v1';
+
 const TIME_PRESETS = [
   { label: "Morning (09:00-12:00)", start: "09:00", end: "12:00" },
   { label: "Afternoon (13:30-16:30)", start: "13:30", end: "16:30" }
@@ -43,7 +45,6 @@ interface FormSection { id: number; section: string; noTime: boolean; classes: C
 
 // --- COMPONENTS ---
 
-// 1. NEW AD OVERLAY COMPONENT
 const AdOverlay = ({ onClose, onClaim }: { onClose: () => void, onClaim: () => void }) => {
     const [step, setStep] = useState<'intro' | 'timer' | 'claim'>('intro');
     const [timeLeft, setTimeLeft] = useState(15);
@@ -65,14 +66,13 @@ const AdOverlay = ({ onClose, onClaim }: { onClose: () => void, onClaim: () => v
     }, [step]);
 
     const handleStartAd = () => {
-        window.open(AD_URL, '_blank'); // Opens the Ad Link
+        window.open(AD_URL, '_blank');
         setStep('timer');
     };
 
     return (
         <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
             <div className="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl relative overflow-hidden text-center">
-                {/* Close Button (Only active if not waiting) */}
                 {step !== 'timer' && (
                     <button onClick={onClose} className="absolute top-4 right-4 text-slate-300 hover:text-slate-500">
                         <XCircle size={24} />
@@ -252,7 +252,7 @@ export default function Home() {
   const [tokens, setTokens] = useState(0);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showSmartGenModal, setShowSmartGenModal] = useState(false);
-  const [showAdOverlay, setShowAdOverlay] = useState(false); // NEW STATE FOR OVERLAY
+  const [showAdOverlay, setShowAdOverlay] = useState(false);
   
   // AI STATES
   const [aiPrompt, setAiPrompt] = useState("");
@@ -261,104 +261,68 @@ export default function Home() {
 
   useEffect(() => {
       async function initData() {
-          // 1. Try to load Local Cache FIRST (Instant UI)
           const cached = localStorage.getItem(CACHE_KEY);
           if (cached) {
               try {
                   const parsed = JSON.parse(cached);
-                  // Ensure data structure is valid (migration fix)
                   const migrated = parsed.map((s: any) => ({ 
                       ...s, 
                       credits: typeof s.credits === 'number' ? s.credits : 3, 
                       noTime: s.noTime ?? false 
                   }));
                   setSubjects(migrated);
-                  setIsLoaded(true); // Show UI immediately!
-              } catch (e) {
-                  console.error("Cache parse error", e);
-              }
+                  setIsLoaded(true); 
+              } catch (e) { console.error("Cache parse error", e); }
           }
 
-          // 2. If logged in, fetch FRESH data from Server (Background Sync)
           if (status === 'authenticated') {
               try {
-                  // Fetch Tokens (Always need fresh tokens)
                   const balance = await getUserTokens();
                   setTokens(balance);
-
-                  // Fetch Schedule
                   const dbData = await loadScheduleFromDB();
                   if (dbData && Array.isArray(dbData)) {
-                      // Only update if DB has data
-                      // (Optional: You could compare dbData vs cached here to avoid re-render)
                       setSubjects(dbData);
-                      // Update cache for next time
                       localStorage.setItem(CACHE_KEY, JSON.stringify(dbData)); 
                   }
-              } catch (e) { 
-                  console.error("DB Sync Error", e); 
-              }
+              } catch (e) { console.error("DB Sync Error", e); }
           } else if (status === 'unauthenticated' && !cached) {
-              // Only try legacy load if we didn't find our new cache key
               const legacy = localStorage.getItem('next-scheduler-prod-v1');
               if (legacy) {
                   try {
                       setSubjects(JSON.parse(legacy));
-                      localStorage.setItem(CACHE_KEY, legacy); // Upgrade to new cache
+                      localStorage.setItem(CACHE_KEY, legacy); 
                   } catch(e) {}
               }
           }
-          
           setIsLoaded(true);
       }
-      
       initData();
   }, [status]);
 
-  // Replace your existing persistData function with this:
   const persistData = async (newSubjects: Subject[]) => {
-    // 1. Always save to Local Cache instantly
     setSubjects(newSubjects);
     localStorage.setItem(CACHE_KEY, JSON.stringify(newSubjects));
-
-    // 2. If logged in, sync to Database in background
     if (status === 'authenticated') {
       setSaving(true);
-      try { 
-          await saveScheduleToDB(newSubjects); 
-      } catch (e) { 
-          console.error("Failed to sync to DB", e); 
-      }
+      try { await saveScheduleToDB(newSubjects); } catch (e) { console.error("Failed to sync to DB", e); }
       setSaving(false);
     }
   };
 
-  // --- LOGOUT HANDLER (Moved Inside) ---
   const handleLogout = () => {
-    // 1. Clear Local Cache (The new fast cache)
     localStorage.removeItem(CACHE_KEY);
-    
-    // 2. Clear Legacy Cache (Just in case)
     localStorage.removeItem('next-scheduler-prod-v1'); 
-    
-    // 3. Reset State (Visual feedback)
     setSubjects([]); 
     setTokens(0);
-
-    // 4. Actually Sign Out
     signOut();
   };
 
-  // --- TOKEN & AI HANDLERS ---
-  
-  // 1. Trigger the Ad Overlay
   const startAdFlow = () => {
     if (status !== 'authenticated') return alert("Login to save tokens!");
-    setShowTokenModal(false); // Close the token menu
-    setShowAdOverlay(true);   // Open the Ad Overlay
+    setShowTokenModal(false); 
+    setShowAdOverlay(true); 
   };
 
-  // 2. Handle Claiming Logic inside the Overlay
   const handleClaimAdReward = async () => {
     const result = await rewardTokens();
     if (result.success && typeof result.newBalance === 'number') {
@@ -370,27 +334,91 @@ export default function Home() {
     }
   };
 
+  // --- UPDATED AI HANDLER ---
   const handleAiSubmit = async () => {
       if (!aiPrompt.trim()) return;
       setIsThinking(true);
       
-      const result = await generateAiFilter(aiPrompt);
+      const currentNames = subjects.map(s => s.name);
       
-      // FIX: Check if newBalance is actually a number
-      if (result.success && typeof result.newBalance === 'number') {
-          setTokens(result.newBalance);
-          setActiveFilter(result.filter);
+      // CALL NEW AI ACTION
+      const response = await generateAiAction(aiPrompt, currentNames);
+      
+      if (response.success && response.result) {
+          const { action, data } = response.result;
+
+          // 1. ADD
+          if (action === "ADD") {
+              const newSubject: Subject = {
+                  id: Math.random().toString(36).substr(2, 9),
+                  name: data.name || "New Subject",
+                  section: data.section || "1",
+                  credits: data.credits || 3,
+                  noTime: false,
+                  active: true,
+                  color: PALETTE[subjects.length % PALETTE.length],
+                  classes: [{ day: "Monday", start: "09:00", end: "12:00" }]
+              };
+              const newSubjects = [...subjects, newSubject];
+              persistData(newSubjects);
+              alert(`AI: Added "${newSubject.name}"`);
+          }
+
+          // 2. REMOVE
+          else if (action === "REMOVE") {
+              const targetName = data.name.toLowerCase();
+              const filtered = subjects.filter(s => !s.name.toLowerCase().includes(targetName));
+              
+              if (filtered.length === subjects.length) {
+                  alert(`AI: Could not find subject "${data.name}" to remove.`);
+              } else {
+                  persistData(filtered);
+                  alert(`AI: Removed "${data.name}"`);
+              }
+          }
+
+          // 3. UPDATE
+          else if (action === "UPDATE") {
+             const targetName = data.targetName.toLowerCase();
+             let found = false;
+             const updated = subjects.map(s => {
+                 if (s.name.toLowerCase().includes(targetName)) {
+                     found = true;
+                     return { ...s, ...data.updates };
+                 }
+                 return s;
+             });
+             
+             if (found) {
+                 persistData(updated);
+                 alert(`AI: Updated "${data.targetName}"`);
+             } else {
+                 alert(`AI: Could not find "${data.targetName}" to update.`);
+             }
+          }
+
+          // 4. FILTER
+          else if (action === "FILTER") {
+              setActiveFilter(data);
+              alert("AI: Filter applied to generated schedules.");
+          }
+
+          // Common updates
+          if (typeof response.newBalance === 'number') setTokens(response.newBalance);
           setShowSmartGenModal(false);
           setAiPrompt("");
+
       } else {
-          alert(result.error || "Something went wrong");
-          if (result.error === "Insufficient tokens") {
-              setShowSmartGenModal(false);
-              setShowTokenModal(true);
+          alert(response.error || "AI could not understand request.");
+          // If insufficient tokens, re-open token modal
+          if (response.error === "Insufficient tokens") {
+             setShowSmartGenModal(false);
+             setShowTokenModal(true);
           }
       }
       setIsThinking(false);
   };
+
   const handleEdit = (name: string) => {
     setEditingName(name);
     setShowAddForm(true);
