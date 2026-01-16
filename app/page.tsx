@@ -23,7 +23,7 @@ const BRAND = {
 };
 
 // REPLACE THIS with your Adsterra/Monetag Direct Link
-const AD_URL = "https://www.effectivegatecpm.com/z55s8g16?key=0f3485ab8cc62270df1010db9ce1ab33"; 
+const AD_URL = process.env.ADSTERRA_URL
 const CACHE_KEY = 'uniplan-local-cache-v1';
 
 const TIME_PRESETS = [
