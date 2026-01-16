@@ -333,6 +333,22 @@ export default function Home() {
     }
   };
 
+  // --- LOGOUT HANDLER (Moved Inside) ---
+  const handleLogout = () => {
+    // 1. Clear Local Cache (The new fast cache)
+    localStorage.removeItem(CACHE_KEY);
+    
+    // 2. Clear Legacy Cache (Just in case)
+    localStorage.removeItem('next-scheduler-prod-v1'); 
+    
+    // 3. Reset State (Visual feedback)
+    setSubjects([]); 
+    setTokens(0);
+
+    // 4. Actually Sign Out
+    signOut();
+  };
+
   // --- TOKEN & AI HANDLERS ---
   
   // 1. Trigger the Ad Overlay
@@ -583,7 +599,7 @@ export default function Home() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div><h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3"><GraduationCap className={BRAND.logoColor} size={32} /> {BRAND.name}</h1></div>
           <div className="flex gap-3 items-center">
-             {status === 'authenticated' ? (<div className="flex items-center gap-3 bg-white p-1 pr-4 rounded-full shadow-sm border border-slate-200">{session.user?.image ? (<img src={session.user.image} alt="User" className="w-8 h-8 rounded-full" />) : (<div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: stringToColor(session.user?.name || 'User') }}>{(session.user?.name?.[0] || 'U').toUpperCase()}</div>)}<div className="text-xs text-left"><div className="font-bold text-slate-700">{session.user?.name}</div><div onClick={() => setShowTokenModal(true)} className="text-pink-500 font-bold text-[10px] cursor-pointer hover:underline flex items-center gap-1"><Gem size={10}/> {tokens} Tokens</div></div><button onClick={() => signOut()} className="text-slate-400 hover:text-red-500 ml-2"><LogOut size={16}/></button></div>) : (<button onClick={() => signIn('google')} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2"><LogIn size={16}/> Login to Sync</button>)}
+             {status === 'authenticated' ? (<div className="flex items-center gap-3 bg-white p-1 pr-4 rounded-full shadow-sm border border-slate-200">{session.user?.image ? (<img src={session.user.image} alt="User" className="w-8 h-8 rounded-full" />) : (<div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: stringToColor(session.user?.name || 'User') }}>{(session.user?.name?.[0] || 'U').toUpperCase()}</div>)}<div className="text-xs text-left"><div className="font-bold text-slate-700">{session.user?.name}</div><div onClick={() => setShowTokenModal(true)} className="text-pink-500 font-bold text-[10px] cursor-pointer hover:underline flex items-center gap-1"><Gem size={10}/> {tokens} Tokens</div></div><button onClick={handleLogout} className="text-slate-400 hover:text-red-500 ml-2"><LogOut size={16}/></button></div>) : (<button onClick={() => signIn('google')} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2"><LogIn size={16}/> Login to Sync</button>)}
              <div className="h-8 w-px bg-slate-200 mx-1"></div>
             <button onClick={() => { setEditingName(null); setShowAddForm(!showAddForm); }} className={`${BRAND.primary} ${BRAND.primaryHover} text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg flex items-center gap-2`}><Plus size={18} /> Add Subject</button>
           </div>
