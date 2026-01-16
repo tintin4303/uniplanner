@@ -11,8 +11,8 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 // --- TYPES ---
 export interface AiResponse {
   action: "FILTER" | "ADD" | "REMOVE" | "UPDATE" | "UNKNOWN";
-  data?: any; // Dynamic payload based on action
-  message?: string; // Feedback message for the user
+  data?: any;
+  message?: string;
 }
 
 // --- DATABASE ACTIONS ---
@@ -136,66 +136,59 @@ export async function rewardTokens() {
   return { success: true, newBalance: user.tokens + REWARD_AMOUNT };
 }
 
-// --- ADVANCED AI ACTION ---
+// --- STATE-AWARE AI ACTION ---
 
-export async function generateAiAction(userPrompt: string, currentSubjects: string[]) {
+export async function generateAiAction(userPrompt: string, currentSubjects: any[]) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) throw new Error("Unauthorized");
 
-  // 1. Check API Key
   if (!process.env.GROQ_API_KEY) {
     return { success: false, error: "Server Misconfiguration: Missing API Key" };
   }
 
-  // 2. Deduct Cost
+  // Deduct Cost
   const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
   if (!user || user.tokens < 5) return { success: false, error: "Insufficient tokens" };
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { tokens: { decrement: 5 } }
-  });
+  await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 5 } } });
 
-  // 3. Call AI (Using Llama 3.3 for logic)
   try {
+    // 1. Simplify the context to save tokens but keep "State Awareness"
+    const context = currentSubjects.map(s => ({
+        name: s.name,
+        credits: s.credits,
+        schedule: s.classes.map((c: any) => `${c.day} ${c.start}-${c.end}`).join(", ")
+    }));
+
     const completion = await groq.chat.completions.create({
       messages: [
         {
           role: "system",
-          content: `You are a Schedule Assistant. Analyze the user's request and output a JSON object with an "action" and "data".
-          
-          Current Subjects in Library: ${JSON.stringify(currentSubjects)}
+          content: `You are a Schedule Assistant. Analyze the user's request based on the CURRENT STATE.
 
-          --- POSSIBLE ACTIONS ---
+          CURRENT STATE (JSON):
+          ${JSON.stringify(context, null, 2)}
 
-          1. **ADD** (User wants to add a new subject)
-             Output: { "action": "ADD", "data": { "name": "Subject Name", "credits": 3, "section": "1" } }
-             * If credits are not mentioned, default to 3.
-             * If section is not mentioned, default to "1".
+          --- INSTRUCTIONS ---
+          * All times to 24h format (1pm -> 13:00).
+          * If the user says "Change X to Y", use UPDATE.
+          * If the user implies a time change (e.g. "Move Math to Monday"), use UPDATE with "classes".
 
-          2. **REMOVE** (User wants to delete a subject)
-             Output: { "action": "REMOVE", "data": { "name": "Subject Name" } }
-             * Use fuzzy matching to find the closest name from the "Current Subjects" list.
+          --- ACTIONS ---
 
-          3. **UPDATE** (User wants to change credits or name)
-             Output: { "action": "UPDATE", "data": { "targetName": "Old Name", "updates": { "credits": 4 } } }
+          1. **ADD**
+             Output: { "action": "ADD", "data": { "name": "Name", "credits": 3, "section": "1", "classes": [{ "day": "Monday", "start": "09:00", "end": "12:00" }] } }
 
-          4. **FILTER** (User wants to filter the GENERATED schedules, e.g., "Fridays off", "No morning classes")
+          2. **REMOVE**
+             Output: { "action": "REMOVE", "data": { "name": "Name" } }
+             * Match names from CURRENT STATE.
+
+          3. **UPDATE**
+             Output: { "action": "UPDATE", "data": { "targetName": "Exact Name From State", "updates": { ... } } }
+             * To change time: { "updates": { "classes": [{ "day": "Friday", "start": "13:00", "end": "16:00" }] } }
+
+          4. **FILTER**
              Output: { "action": "FILTER", "data": { "days_off": ["Friday"], "start_time_after": "10:00" } }
-             * "days_off": array of strings (Full days: "Monday", "Tuesday", etc.)
-             * "start_time_after": string "HH:MM" (24h)
-             * "end_time_before": string "HH:MM" (24h)
-             * "same_day": array of strings (Extract subject codes that MUST be on the same day)
-
-          --- EXAMPLES ---
-          User: "Add Calculus for 3 credits"
-          JSON: { "action": "ADD", "data": { "name": "Calculus", "credits": 3 } }
-
-          User: "I hate mornings"
-          JSON: { "action": "FILTER", "data": { "start_time_after": "12:00" } }
-
-          User: "Delete History"
-          JSON: { "action": "REMOVE", "data": { "name": "History" } }
 
           Return ONLY valid JSON.`
         },
@@ -213,7 +206,6 @@ export async function generateAiAction(userPrompt: string, currentSubjects: stri
 
   } catch (error) {
     console.error("AI Error:", error);
-    // Refund tokens on error
     await prisma.user.update({ where: { id: user.id }, data: { tokens: { increment: 5 } } });
     return { success: false, error: "AI Service Failed" };
   }

@@ -334,20 +334,17 @@ export default function Home() {
     }
   };
 
-  // --- UPDATED AI HANDLER ---
+  // --- SMART AI HANDLER (Supports Dynamic Time) ---
   const handleAiSubmit = async () => {
       if (!aiPrompt.trim()) return;
       setIsThinking(true);
       
-      const currentNames = subjects.map(s => s.name);
-      
-      // CALL NEW AI ACTION
-      const response = await generateAiAction(aiPrompt, currentNames);
+      // Pass FULL subjects array for "State Awareness"
+      const response = await generateAiAction(aiPrompt, subjects);
       
       if (response.success && response.result) {
           const { action, data } = response.result;
 
-          // 1. ADD
           if (action === "ADD") {
               const newSubject: Subject = {
                   id: Math.random().toString(36).substr(2, 9),
@@ -357,14 +354,16 @@ export default function Home() {
                   noTime: false,
                   active: true,
                   color: PALETTE[subjects.length % PALETTE.length],
-                  classes: [{ day: "Monday", start: "09:00", end: "12:00" }]
+                  // SMART TIME LOGIC
+                  classes: (data.classes && Array.isArray(data.classes) && data.classes.length > 0)
+                      ? data.classes 
+                      : [{ day: "Monday", start: "09:00", "end": "12:00" }]
               };
               const newSubjects = [...subjects, newSubject];
               persistData(newSubjects);
               alert(`AI: Added "${newSubject.name}"`);
           }
 
-          // 2. REMOVE
           else if (action === "REMOVE") {
               const targetName = data.name.toLowerCase();
               const filtered = subjects.filter(s => !s.name.toLowerCase().includes(targetName));
@@ -377,7 +376,6 @@ export default function Home() {
               }
           }
 
-          // 3. UPDATE
           else if (action === "UPDATE") {
              const targetName = data.targetName.toLowerCase();
              let found = false;
@@ -397,20 +395,17 @@ export default function Home() {
              }
           }
 
-          // 4. FILTER
           else if (action === "FILTER") {
               setActiveFilter(data);
               alert("AI: Filter applied to generated schedules.");
           }
 
-          // Common updates
           if (typeof response.newBalance === 'number') setTokens(response.newBalance);
           setShowSmartGenModal(false);
           setAiPrompt("");
 
       } else {
           alert(response.error || "AI could not understand request.");
-          // If insufficient tokens, re-open token modal
           if (response.error === "Insufficient tokens") {
              setShowSmartGenModal(false);
              setShowTokenModal(true);
@@ -557,7 +552,7 @@ export default function Home() {
                       <button onClick={() => setShowSmartGenModal(false)}><XCircle className="text-slate-300 hover:text-slate-500"/></button>
                   </div>
                   <p className="text-slate-500 text-sm mb-4">Describe your perfect schedule in plain English. Our AI will filter the options for you.</p>
-                  <textarea className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-32 mb-4" placeholder="e.g., I want Fridays off and I hate waking up before 10am." value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)}/>
+                  <textarea className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-32 mb-4" placeholder="e.g., Add Python on Fridays 1pm to 4pm" value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)}/>
                   <div className="flex justify-between items-center"><span className="text-xs font-bold text-slate-400">Cost: <span className="text-pink-500">5 Tokens</span></span><button onClick={handleAiSubmit} disabled={isThinking || !aiPrompt} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2">{isThinking ? <><Clock size={16} className="animate-spin"/> Thinking...</> : <><Zap size={16} className="fill-white"/> Generate</>}</button></div>
               </div>
           </div>
@@ -638,7 +633,7 @@ export default function Home() {
             <div onClick={() => setShowSmartGenModal(true)} className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 rounded-2xl shadow-xl text-white cursor-pointer hover:scale-[1.02] transition-transform flex items-center gap-4 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="bg-white/20 p-2 rounded-lg"><Sparkles size={24} className="text-yellow-300 fill-yellow-300 animate-pulse"/></div>
-                <div><h3 className="font-bold text-sm">Smart AI Filter</h3><p className="text-xs text-indigo-100 opacity-80">"I want Fridays off..."</p></div>
+                <div><h3 className="font-bold text-sm">Smart AI Scheduler</h3><p className="text-xs text-indigo-100 opacity-80">"I want Fridays off..."</p></div>
                 <div className="ml-auto bg-black/20 px-2 py-1 rounded text-[10px] font-bold">5 <Gem size={8} className="inline"/></div>
             </div>
 
