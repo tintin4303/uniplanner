@@ -1,41 +1,52 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import Stripe from "stripe";
+import { PrismaClient } from "@prisma/client";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover",
 });
 
 const prisma = new PrismaClient();
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const signature = (await headers()).get("stripe-signature") as string;
+  
+  // FIX: headers() is async in Next.js 15+
+  const headerPayload = await headers();
+  const signature = headerPayload.get("stripe-signature") as string;
 
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    if (!signature || !endpointSecret) {
+      throw new Error("Missing signature or webhook secret");
+    }
+    event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
   } catch (err: any) {
+    console.error(`⚠️  Webhook signature verification failed.`, err.message);
     return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
 
-  // Handle the event
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     
-    // Retrieve the user ID we sent in metadata
+    // Retrieve data from metadata
     const userId = session.metadata?.userId;
+    const tokensToAdd = parseInt(session.metadata?.tokensToAdd || "100");
 
     if (userId) {
-      console.log(`💰 Payment success! Adding 100 tokens to user ${userId}`);
-      
-      await prisma.user.update({
-        where: { id: userId },
-        data: { tokens: { increment: 100 } },
-      });
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { tokens: { increment: tokensToAdd } },
+        });
+        console.log(`✅ Added ${tokensToAdd} tokens to user ${userId}`);
+      } catch (dbError) {
+        console.error("Database update failed:", dbError);
+        return NextResponse.json({ error: "Database update failed" }, { status: 500 });
+      }
     }
   }
 

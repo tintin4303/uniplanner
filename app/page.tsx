@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Trash2, Plus, Save, BookOpen, CheckCircle, XCircle, AlertCircle, Edit2, Zap, Clock, Download, List, GraduationCap, LogIn, LogOut, Gem, PlayCircle, CreditCard, Sparkles, ExternalLink, Timer } from 'lucide-react';
+import { Trash2, Plus, Save, BookOpen, CheckCircle, XCircle, AlertCircle, Edit2, Zap, Clock, Download, List, GraduationCap, LogIn, LogOut, Gem, PlayCircle, CreditCard, Sparkles, ExternalLink } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -22,7 +22,7 @@ const BRAND = {
   accentBorder: "border-emerald-100",
 };
 
-// Adsterra/Monetag Direct Link
+// Adsterra/Monetag Direct Link (Environment Variable)
 const AD_URL = process.env.NEXT_PUBLIC_ADSTERRA_URL || "#";
 const CACHE_KEY = 'uniplan-local-cache-v1';
 
@@ -232,7 +232,7 @@ const AddSubjectForm = ({ onSave, onCancel, initialName, initialCredits, initial
             </div>
           ))}
         </div>
-        <div className="flex gap-3"><button onClick={addSection} className="flex-1 py-3 border-2 border-dashed border-slate-300 text-slate-400 rounded-xl font-bold hover:border-indigo-400 hover:text-indigo-500 transition-colors">Add Section</button><button onClick={handleSave} className={`flex-1 py-3 ${BRAND.primary} ${BRAND.primaryHover} text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95`}><Save size={18} /> Save Subject</button></div>
+        <div className="flex gap-3"><button onClick={addSection} className="flex-1 py-3 border-2 border-dashed border-slate-300 text-slate-400 rounded-xl font-bold hover:border-indigo-400 hover:text-indigo-500 transition-colors">Add Option</button><button onClick={handleSave} className={`flex-1 py-3 ${BRAND.primary} ${BRAND.primaryHover} text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95`}><Save size={18} /> Save Subject</button></div>
       </div>
     </div>
   );
@@ -335,7 +335,23 @@ export default function Home() {
     }
   };
 
-  // --- SMART AI HANDLER (Supports Dynamic Time) ---
+  // --- BUY TOKENS HANDLER (STRIPE / PROMPTPAY) ---
+  const handleBuyTokens = async (packageId: 'starter' | 'pro') => {
+      if (status !== 'authenticated') return alert("Please login first.");
+      try {
+          const res = await fetch('/api/stripe/checkout', { 
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ packageId }) 
+          });
+          const data = await res.json();
+          if (data.url) window.location.href = data.url;
+      } catch(e) {
+          alert("Payment failed to initialize");
+      }
+  };
+
+  // --- SMART AI HANDLER (Supports Dynamic Time & State Awareness) ---
   const handleAiSubmit = async () => {
       if (!aiPrompt.trim()) return;
       setIsThinking(true);
@@ -569,41 +585,55 @@ export default function Home() {
                     </h2>
                     <button onClick={() => setShowTokenModal(false)}><XCircle className="text-slate-300 hover:text-slate-500"/></button>
                     </div>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-6">
                       
-                      {/* WATCH AD SECTION (UPDATED) */}
-                      <div className="border-2 border-dashed border-indigo-200 bg-indigo-50 p-6 rounded-2xl text-center">
-                        <PlayCircle size={48} className="mx-auto text-indigo-500 mb-2"/>
-                        <h3 className="font-bold text-indigo-900">Watch Ad (+5 Tokens)</h3>
-                        <p className="text-xs text-indigo-600 mb-4">Support us to earn free AI credits.</p>
-                        <button onClick={startAdFlow} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-xl font-bold shadow-lg transition-transform active:scale-95">
-                            Watch Ad
+                      {/* WATCH AD SECTION */}
+                      <div className="border-2 border-dashed border-indigo-200 bg-indigo-50 p-6 rounded-2xl text-center relative overflow-hidden">
+                        <div className="absolute top-0 right-0 bg-indigo-200 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded-bl-xl">FREE</div>
+                        <PlayCircle size={32} className="mx-auto text-indigo-500 mb-2"/>
+                        <h3 className="font-bold text-indigo-900">Watch Ad</h3>
+                        <p className="text-xs text-indigo-600 mb-3">+5 Tokens</p>
+                        <button onClick={startAdFlow} className="bg-white border-2 border-indigo-100 hover:border-indigo-300 text-indigo-600 w-full py-2 rounded-xl font-bold shadow-sm transition-all text-sm">
+                            Watch Now
                         </button>
                       </div>
 
-                      {/* BUY TOKENS SECTION */}
-                      <div className="border border-slate-200 p-6 rounded-2xl text-center">
-                        <CreditCard size={48} className="mx-auto text-indigo-500 mb-2"/>
-                        <h3 className="font-bold text-indigo-900">Buy 100 Tokens</h3>
-                        <p className="text-xs text-indigo-600 mb-4">Instant refill for power users.</p>
-                        <button 
-                            id="buy-btn"
-                            onClick={async () => {
-                                const btn = document.getElementById("buy-btn") as HTMLButtonElement;
-                                if(btn) { btn.disabled = true; btn.textContent = "Loading..."; }
-                                try {
-                                    const res = await fetch('/api/stripe/checkout', { method: 'POST' });
-                                    const data = await res.json();
-                                    if (data.url) window.location.href = data.url;
-                                } catch(e) {
-                                    alert("Payment failed to initialize");
-                                    if(btn) { btn.disabled = false; btn.textContent = "Buy 100 Tokens ($0.99)"; }
-                                }
-                            }}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-xl font-bold shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
-                        >
-                            Buy 100 Tokens ($0.99)
-                        </button>
+                      {/* PRICING SPLIT */}
+                      <div className="grid grid-cols-2 gap-4">
+                          {/* OPTION 1: STARTER (DECOY) */}
+                          <div className="border border-slate-200 p-4 rounded-2xl text-center opacity-80 hover:opacity-100 transition-opacity">
+                              <h3 className="font-bold text-slate-700 text-sm">Starter</h3>
+                              <div className="text-2xl font-black text-slate-800 my-1">฿35</div>
+                              <p className="text-xs text-slate-400 mb-3">100 Tokens</p>
+                              <button 
+                                  onClick={() => handleBuyTokens('starter')}
+                                  className="bg-slate-100 hover:bg-slate-200 text-slate-600 w-full py-2 rounded-xl font-bold text-xs"
+                              >
+                                  Buy
+                              </button>
+                          </div>
+
+                          {/* OPTION 2: PRO (BEST VALUE) */}
+                          <div className="border-2 border-indigo-500 bg-white p-4 rounded-2xl text-center relative shadow-xl transform scale-105">
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-pink-500 to-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
+                                  BEST VALUE
+                              </div>
+                              <h3 className="font-bold text-indigo-900 text-sm mt-1">Pro Pack</h3>
+                              <div className="text-2xl font-black text-indigo-600 my-1">฿150</div>
+                              <p className="text-xs text-indigo-400 mb-3 font-bold">500 Tokens</p>
+                              <button 
+                                  onClick={() => handleBuyTokens('pro')}
+                                  className="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-xl font-bold text-xs shadow-lg animate-pulse"
+                              >
+                                  Buy Now
+                              </button>
+                          </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1">
+                            <CreditCard size={10}/> Secure payment via Stripe (PromptPay Supported)
+                        </p>
                       </div>
                 </div>
               </div>
@@ -624,8 +654,10 @@ export default function Home() {
           <div><h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3"><GraduationCap className={BRAND.logoColor} size={32} /> {BRAND.name}</h1></div>
           <div className="flex gap-3 items-center">
              {status === 'loading' ? (
+                // LOADING SKELETON (Fixes FOUC)
                 <div className="flex items-center gap-3 bg-white p-2 rounded-full shadow-sm border border-slate-200 animate-pulse w-48 h-12"></div>
              ) : status === 'authenticated' ? (
+                // LOGGED IN VIEW
                 <div className="flex items-center gap-3 bg-white p-1 pr-4 rounded-full shadow-sm border border-slate-200">
                     {session.user?.image ? (
                         <img src={session.user.image} alt="User" className="w-8 h-8 rounded-full" />
@@ -645,6 +677,7 @@ export default function Home() {
                     </button>
                 </div>
              ) : (
+                // LOGGED OUT VIEW
                 <button onClick={() => signIn('google')} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2">
                     <LogIn size={16}/> Login to Sync
                 </button>
