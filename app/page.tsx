@@ -232,7 +232,7 @@ const AddSubjectForm = ({ onSave, onCancel, initialName, initialCredits, initial
             </div>
           ))}
         </div>
-        <div className="flex gap-3"><button onClick={addSection} className="flex-1 py-3 border-2 border-dashed border-slate-300 text-slate-400 rounded-xl font-bold hover:border-indigo-400 hover:text-indigo-500 transition-colors">Add Option</button><button onClick={handleSave} className={`flex-1 py-3 ${BRAND.primary} ${BRAND.primaryHover} text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95`}><Save size={18} /> Save Subject</button></div>
+        <div className="flex gap-3"><button onClick={addSection} className="flex-1 py-3 border-2 border-dashed border-slate-300 text-slate-400 rounded-xl font-bold hover:border-indigo-400 hover:text-indigo-500 transition-colors">Add Section</button><button onClick={handleSave} className={`flex-1 py-3 ${BRAND.primary} ${BRAND.primaryHover} text-white rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95`}><Save size={18} /> Save Subject</button></div>
       </div>
     </div>
   );
