@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XCircle, Sparkles, Zap, Clock, Gem } from 'lucide-react';
 
 interface SmartAIModalProps {
@@ -9,6 +9,28 @@ interface SmartAIModalProps {
 
 export default function SmartAIModal({ onClose, onSubmit, isThinking }: SmartAIModalProps) {
     const [aiPrompt, setAiPrompt] = useState("");
+
+    // Rotating placeholder examples
+    const placeholderExamples = [
+        "Add Calculus on Monday at 9am",
+        "Put Biology on TTh from 1 to 3",
+        "Change Chemistry to Wednesday morning",
+        "Move Physics to 2pm",
+        "Make English 4 credits",
+        "Remove History",
+        "I don't want classes on Friday",
+        "No classes before 10am",
+        "Add another Math section on MWF afternoon"
+    ];
+
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setPlaceholderIndex((prev) => (prev + 1) % placeholderExamples.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, []);
 
     const handleSubmit = () => {
         if (aiPrompt.trim()) {
@@ -28,13 +50,23 @@ export default function SmartAIModal({ onClose, onSubmit, isThinking }: SmartAIM
                         <XCircle className="text-slate-300 hover:text-slate-500 transition-colors" />
                     </button>
                 </div>
-                <p className="text-slate-500 text-sm mb-4">Describe your perfect schedule in plain English. Our AI will filter the options for you.</p>
+                <p className="text-slate-500 text-sm mb-4">Describe what you want in plain English. Our AI understands natural language!</p>
                 <textarea
-                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-32 mb-4"
-                    placeholder="e.g., Add Python on Fridays 1pm to 4pm"
+                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-32 mb-2"
+                    placeholder={placeholderExamples[placeholderIndex]}
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                 />
+
+                {/* Command hints */}
+                <div className="mb-4 text-[10px] text-slate-400 space-y-1">
+                    <div className="flex flex-wrap gap-2">
+                        <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded font-bold">➕ ADD</span>
+                        <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-bold">🔄 UPDATE</span>
+                        <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded font-bold">❌ DELETE</span>
+                        <span className="bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-bold">🎯 FILTER</span>
+                    </div>
+                </div>
                 <div className="flex justify-between items-center">
                     <span className="text-xs font-bold text-slate-400">
                         Cost: <span className="text-pink-500">5 Tokens</span>

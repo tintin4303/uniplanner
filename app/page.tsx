@@ -248,7 +248,7 @@ export default function Home() {
                                 <Sparkles size={24} className="text-yellow-300 fill-yellow-300 animate-pulse" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-sm">Smart AI Filter</h3>
+                                <h3 className="font-bold text-sm">Smart AI Scheduler</h3>
                                 <p className="text-xs text-indigo-100 opacity-80">"I want Fridays off..."</p>
                             </div>
                             <div className="ml-auto bg-black/20 px-2 py-1 rounded text-[10px] font-bold">
