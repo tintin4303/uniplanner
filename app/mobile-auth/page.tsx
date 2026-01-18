@@ -24,10 +24,9 @@ export default function MobileAuth() {
 
       // ⚠️ REPLACE THIS IP WITH THE ONE FROM YOUR TERMINAL ⚠️
       // Example: exp://192.168.1.45:8081/--/auth?user=...
-      const YOUR_EXPO_IP = "192.168.1.105:8081"; // <--- UPDATE THIS!
-      
+      const YOUR_EXPO_IP = "192.168.1.105:8081"; 
+
       const fullUrl = `exp://${YOUR_EXPO_IP}/--/auth?user=${userData}`;
-      setExpoUrl(fullUrl);
 
       // Attempt Auto-Redirect after 1 second
       const timer = setTimeout(() => {
