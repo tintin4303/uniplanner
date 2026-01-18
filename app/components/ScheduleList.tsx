@@ -1,7 +1,7 @@
 import React from 'react';
 import { Download, AlertCircle } from 'lucide-react';
 import ScheduleTable from './ScheduleTable';
-import { Subject } from '@/app/lib/types';
+import { Subject, Theme } from '@/app/lib/types';
 import { BRAND } from '@/app/lib/constants';
 import { analyzeSchedule } from '@/app/lib/utils';
 
@@ -9,9 +9,10 @@ interface ScheduleListProps {
     schedules: Subject[][];
     onDownloadPDF: (index: number) => void;
     exportingId: string | null;
+    theme?: Theme;
 }
 
-export default function ScheduleList({ schedules, onDownloadPDF, exportingId }: ScheduleListProps) {
+export default function ScheduleList({ schedules, onDownloadPDF, exportingId, theme }: ScheduleListProps) {
     const calculateCredits = (schedule: Subject[]) => schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
 
     if (schedules.length === 0) {
@@ -66,7 +67,7 @@ export default function ScheduleList({ schedules, onDownloadPDF, exportingId }: 
                             </button>
                         </div>
 
-                        <ScheduleTable schedule={schedule} id={`schedule-option-${idx}`} exporting={exportingId === `schedule-option-${idx}`} />
+                        <ScheduleTable schedule={schedule} id={`schedule-option-${idx}`} exporting={exportingId === `schedule-option-${idx}`} theme={theme} />
                     </div>
                 );
             })}

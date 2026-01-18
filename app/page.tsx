@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Sparkles, Gem } from 'lucide-react';
+import { Sparkles, Gem, Palette } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -12,6 +12,7 @@ import AdOverlay from './components/AdOverlay';
 import DonationModal from './components/DonationModal';
 import TokenModal from './components/TokenModal';
 import SmartAIModal from './components/SmartAIModal';
+import ThemeModal from './components/ThemeModal';
 import Header from './components/Header';
 import AddSubjectForm from './components/AddSubjectForm';
 import SubjectLibrary from './components/SubjectLibrary';
@@ -22,6 +23,7 @@ import Footer from './components/Footer';
 import { useScheduleData } from './hooks/useScheduleData';
 import { useScheduleGenerator } from './hooks/useScheduleGenerator';
 import { useTokens } from './hooks/useTokens';
+import { useTheme } from './hooks/useTheme';
 
 // Types & Constants
 import { FormSection, Subject } from './lib/types';
@@ -43,6 +45,7 @@ export default function Home() {
     const [showSmartGenModal, setShowSmartGenModal] = useState(false);
     const [showAdOverlay, setShowAdOverlay] = useState(false);
     const [showDonationModal, setShowDonationModal] = useState(false);
+    const [showThemeModal, setShowThemeModal] = useState(false);
 
     // AI & Filtering
     const [isThinking, setIsThinking] = useState(false);
@@ -50,6 +53,9 @@ export default function Home() {
 
     // Token Management
     const { tokens, setTokens, handleClaimAdReward, handleBuyTokens, handleAiSubmit } = useTokens(session, status, subjects, persistData);
+
+    // Theme Management
+    const { purchasedThemes, activeTheme, activeThemeId, purchaseTheme, activateTheme, isThemePurchased } = useTheme(session, status, tokens, setTokens);
 
     // Schedule Generation
     const { generatedSchedules, groupedSubjects, calculateTotalActiveCredits } = useScheduleGenerator(subjects, isLoaded, activeFilter);
@@ -200,6 +206,17 @@ export default function Home() {
                     isThinking={isThinking}
                 />
             )}
+            {showThemeModal && (
+                <ThemeModal
+                    onClose={() => setShowThemeModal(false)}
+                    purchasedThemes={purchasedThemes}
+                    activeThemeId={activeThemeId}
+                    tokens={tokens}
+                    onPurchase={purchaseTheme}
+                    onActivate={activateTheme}
+                    isAuthenticated={status === 'authenticated'}
+                />
+            )}
 
             {/* --- ACTIVE FILTER BANNER --- */}
             {activeFilter && (
@@ -229,6 +246,15 @@ export default function Home() {
                     onShowDonationModal={() => setShowDonationModal(true)}
                     onAddSubject={() => { setEditingName(null); setShowAddForm(!showAddForm); }}
                 />
+
+                {/* Theme Button - Floating */}
+                <button
+                    onClick={() => setShowThemeModal(true)}
+                    className="fixed bottom-24 right-8 w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-40"
+                    title="Change Theme"
+                >
+                    <Palette size={24} />
+                </button>
 
                 {/* --- CONTENT AREA --- */}
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -286,6 +312,7 @@ export default function Home() {
                             schedules={generatedSchedules}
                             onDownloadPDF={downloadPDF}
                             exportingId={exportingId}
+                            theme={activeTheme}
                         />
                     </div>
                 </div>

@@ -50,6 +50,7 @@ model User {
   tokens         Int       @default(10)
   lastAdReward   DateTime?
   unlockedThemes String[]  @default(["default"]) // Track owned themes
+  activeTheme    String    @default("classic-blue") // Currently active theme
   
   schedules      Schedule[]
 }
