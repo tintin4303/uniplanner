@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Session } from 'next-auth';
 import { Theme, UserThemes } from '@/app/lib/types';
-import { THEMES, getThemeById, getDefaultTheme } from '@/app/lib/themes';
+import { getThemeById, getDefaultTheme } from '@/app/lib/themes';
 
 const THEME_CACHE_KEY = 'uniplan-active-theme';
 
@@ -89,8 +89,8 @@ export function useTheme(session: Session | null, status: string, tokens: number
             return { success: false, error: 'Theme not found' };
         }
 
-        // Check if user owns the theme
-        if (!purchasedThemes.includes(themeId)) {
+        // Free themes can always be activated, otherwise check ownership
+        if (theme.price > 0 && !purchasedThemes.includes(themeId)) {
             return { success: false, error: 'Theme not purchased' };
         }
 
