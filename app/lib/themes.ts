@@ -1,7 +1,7 @@
 import { Theme } from './types';
 
 export const THEMES: Theme[] = [
-    // FREE TIER
+    // ========== FREE TIER ==========
     {
         id: 'classic-blue',
         name: 'Classic Blue',
@@ -20,8 +20,44 @@ export const THEMES: Theme[] = [
         },
         preview: '/themes/classic-blue.png'
     },
+    {
+        id: 'sakura-pink',
+        name: 'Sakura Pink',
+        description: 'Cherry blossom serenity',
+        price: 0,
+        tier: 'free',
+        colors: {
+            header: 'bg-pink-900',
+            headerText: 'text-white',
+            accent: 'text-rose-300',
+            subjectPalette: [
+                'bg-pink-500', 'bg-rose-500', 'bg-fuchsia-500',
+                'bg-pink-400', 'bg-rose-400', 'bg-fuchsia-400',
+                'bg-pink-600', 'bg-rose-600', 'bg-red-400', 'bg-pink-300'
+            ]
+        },
+        preview: '/themes/sakura-pink.png'
+    },
+    {
+        id: 'midnight-sky',
+        name: 'Midnight Sky',
+        description: 'Starlit darkness',
+        price: 0,
+        tier: 'free',
+        colors: {
+            header: 'bg-indigo-950',
+            headerText: 'text-white',
+            accent: 'text-yellow-300',
+            subjectPalette: [
+                'bg-indigo-600', 'bg-blue-600', 'bg-violet-600',
+                'bg-indigo-500', 'bg-blue-500', 'bg-purple-600',
+                'bg-indigo-700', 'bg-blue-700', 'bg-violet-500', 'bg-slate-600'
+            ]
+        },
+        preview: '/themes/midnight-sky.png'
+    },
 
-    // BASIC TIER (10 tokens)
+    // ========== BASIC TIER (10 tokens) ==========
     {
         id: 'midnight-purple',
         name: 'Midnight Purple',
@@ -94,8 +130,26 @@ export const THEMES: Theme[] = [
         },
         preview: '/themes/ocean-blue.png'
     },
+    {
+        id: 'lava-flow',
+        name: 'Lava Flow',
+        description: 'Volcanic energy and power',
+        price: 10,
+        tier: 'basic',
+        colors: {
+            header: 'bg-gradient-to-r from-red-900 to-orange-900',
+            headerText: 'text-white',
+            accent: 'text-yellow-400',
+            subjectPalette: [
+                'bg-red-600', 'bg-orange-600', 'bg-red-500',
+                'bg-orange-500', 'bg-red-700', 'bg-orange-700',
+                'bg-amber-600', 'bg-red-400', 'bg-orange-400', 'bg-yellow-600'
+            ]
+        },
+        preview: '/themes/lava-flow.png'
+    },
 
-    // PREMIUM TIER (20 tokens)
+    // ========== PREMIUM TIER (20 tokens) ==========
     {
         id: 'rose-gold',
         name: 'Rose Gold',
@@ -150,8 +204,26 @@ export const THEMES: Theme[] = [
         },
         preview: '/themes/pastel-dream.png'
     },
+    {
+        id: 'electric-storm',
+        name: 'Electric Storm',
+        description: 'Lightning strikes and thunder',
+        price: 20,
+        tier: 'premium',
+        colors: {
+            header: 'bg-gradient-to-r from-purple-950 to-blue-950',
+            headerText: 'text-white',
+            accent: 'text-yellow-300',
+            subjectPalette: [
+                'bg-yellow-400', 'bg-blue-600', 'bg-purple-600',
+                'bg-yellow-500', 'bg-cyan-500', 'bg-violet-600',
+                'bg-amber-400', 'bg-blue-500', 'bg-purple-500', 'bg-cyan-600'
+            ]
+        },
+        preview: '/themes/electric-storm.png'
+    },
 
-    // ELITE TIER (30 tokens)
+    // ========== ELITE TIER (30 tokens) ==========
     {
         id: 'aurora-borealis',
         name: 'Aurora Borealis',
@@ -187,6 +259,24 @@ export const THEMES: Theme[] = [
             ]
         },
         preview: '/themes/monochrome-elite.png'
+    },
+    {
+        id: 'galaxy-dream',
+        name: 'Galaxy Dream',
+        description: 'Cosmic wonder and stardust',
+        price: 30,
+        tier: 'elite',
+        colors: {
+            header: 'bg-gradient-to-r from-purple-950 via-pink-900 to-blue-950',
+            headerText: 'text-white',
+            accent: 'text-pink-300',
+            subjectPalette: [
+                'bg-purple-600', 'bg-pink-600', 'bg-blue-600',
+                'bg-fuchsia-600', 'bg-violet-600', 'bg-indigo-600',
+                'bg-purple-500', 'bg-pink-500', 'bg-blue-500', 'bg-cyan-600'
+            ]
+        },
+        preview: '/themes/galaxy-dream.png'
     }
 ];
 
