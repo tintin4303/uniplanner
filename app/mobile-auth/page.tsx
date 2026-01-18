@@ -16,6 +16,7 @@ export default function MobileAuth() {
     // 2. PREPARE REDIRECT LINK
     if (status === "authenticated" && session) {
       const userData = encodeURIComponent(JSON.stringify({
+        id: (session.user as any).id, // <--- CRITICAL ADDITION
         name: session.user?.name,
         email: session.user?.email,
         image: session.user?.image,
