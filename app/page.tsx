@@ -3,8 +3,6 @@
 
 import React, { useState } from 'react';
 import { Sparkles, Gem, Palette } from 'lucide-react';
-import { toPng } from 'html-to-image';
-import jsPDF from 'jspdf';
 import { useSession, signIn, signOut } from "next-auth/react";
 
 // Components
@@ -152,36 +150,14 @@ export default function Home() {
         setEditingName(null);
     };
 
-    const downloadPDF = async (index: number) => {
-        const id = `schedule-option-${index}`;
+    const handleExportStart = (id: string) => {
         setExportingId(id);
-        setTimeout(async () => {
-            const element = document.getElementById(id);
-            if (element) {
-                try {
-                    const dataUrl = await toPng(element, {
-                        cacheBust: true,
-                        pixelRatio: 2,
-                        backgroundColor: '#ffffff',
-                        width: 1920,
-                        height: element.offsetHeight
-                    });
-                    const imgProps = new jsPDF().getImageProperties(dataUrl);
-                    const pdf = new jsPDF({
-                        orientation: imgProps.width > imgProps.height ? 'l' : 'p',
-                        unit: 'px',
-                        format: [imgProps.width, imgProps.height]
-                    });
-                    pdf.addImage(dataUrl, 'PNG', 0, 0, imgProps.width, imgProps.height);
-                    pdf.save(`my-schedule-option-${index + 1}.pdf`);
-                } catch (err) {
-                    console.error("Export failed", err);
-                    alert("Failed to export PDF.");
-                }
-            }
-            setExportingId(null);
-        }, 100);
     };
+
+    const handleExportEnd = () => {
+        setExportingId(null);
+    };
+
 
     if (!isLoaded) return null;
 
@@ -310,7 +286,8 @@ export default function Home() {
                     <div className="w-full flex-1 min-w-0">
                         <ScheduleList
                             schedules={generatedSchedules}
-                            onDownloadPDF={downloadPDF}
+                            onExportStart={handleExportStart}
+                            onExportEnd={handleExportEnd}
                             exportingId={exportingId}
                             theme={activeTheme}
                         />

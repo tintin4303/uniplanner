@@ -1,18 +1,20 @@
 import React from 'react';
-import { Download, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import ScheduleTable from './ScheduleTable';
+import ExportMenu from './Export';
 import { Subject, Theme } from '@/app/lib/types';
 import { BRAND } from '@/app/lib/constants';
 import { analyzeSchedule } from '@/app/lib/utils';
 
 interface ScheduleListProps {
     schedules: Subject[][];
-    onDownloadPDF: (index: number) => void;
+    onExportStart: (id: string) => void;
+    onExportEnd: () => void;
     exportingId: string | null;
     theme?: Theme;
 }
 
-export default function ScheduleList({ schedules, onDownloadPDF, exportingId, theme }: ScheduleListProps) {
+export default function ScheduleList({ schedules, onExportStart, onExportEnd, exportingId, theme }: ScheduleListProps) {
     const calculateCredits = (schedule: Subject[]) => schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
 
     if (schedules.length === 0) {
@@ -34,7 +36,7 @@ export default function ScheduleList({ schedules, onDownloadPDF, exportingId, th
                         {/* --- HEADER CONTAINER --- */}
                         <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4 px-4 md:px-0 md:ml-4">
 
-                            {/* TOP ROW: Option + Credits + Mobile PDF */}
+                            {/* TOP ROW: Option + Credits + Mobile Export */}
                             <div className="flex items-center justify-between w-full md:w-auto gap-3">
                                 <div className="flex items-center gap-3">
                                     <div className={`${BRAND.secondary} text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg whitespace-nowrap`}>
@@ -45,10 +47,16 @@ export default function ScheduleList({ schedules, onDownloadPDF, exportingId, th
                                     </div>
                                 </div>
 
-                                {/* PDF Button (Visible on Mobile Only here) */}
-                                <button onClick={() => onDownloadPDF(idx)} disabled={exportingId !== null} className={`md:hidden bg-white border border-slate-200 hover:border-${BRAND.primary.replace('bg-', '')} text-slate-500 ${BRAND.primaryText.replace('text-', 'hover:text-')} px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95 disabled:opacity-50`}>
-                                    <Download size={14} /> PDF
-                                </button>
+                                {/* Export Button (Visible on Mobile Only here) */}
+                                <div className="md:hidden">
+                                    <ExportMenu
+                                        elementId={`schedule-option-${idx}`}
+                                        fileName={`schedule-option-${idx + 1}`}
+                                        isExporting={exportingId === `schedule-option-${idx}`}
+                                        onExportStart={onExportStart}
+                                        onExportEnd={onExportEnd}
+                                    />
+                                </div>
                             </div>
 
                             {/* TAGS ROW (Scrollable on Mobile) */}
@@ -60,11 +68,17 @@ export default function ScheduleList({ schedules, onDownloadPDF, exportingId, th
                                 ))}
                             </div>
 
-                            {/* PDF Button (Desktop Only) */}
+                            {/* Export Button (Desktop Only) */}
                             <div className="hidden md:block flex-1 h-px bg-slate-200 mx-2"></div>
-                            <button onClick={() => onDownloadPDF(idx)} disabled={exportingId !== null} className={`hidden md:flex bg-white border border-slate-200 hover:border-${BRAND.primary.replace('bg-', '')} text-slate-500 ${BRAND.primaryText.replace('text-', 'hover:text-')} px-3 py-1 rounded-full text-xs font-bold items-center gap-2 transition-all shadow-sm active:scale-95 disabled:opacity-50`}>
-                                <Download size={14} /> {exportingId === `schedule-option-${idx}` ? 'Saving...' : 'PDF'}
-                            </button>
+                            <div className="hidden md:block">
+                                <ExportMenu
+                                    elementId={`schedule-option-${idx}`}
+                                    fileName={`schedule-option-${idx + 1}`}
+                                    isExporting={exportingId === `schedule-option-${idx}`}
+                                    onExportStart={onExportStart}
+                                    onExportEnd={onExportEnd}
+                                />
+                            </div>
                         </div>
 
                         <ScheduleTable schedule={schedule} id={`schedule-option-${idx}`} exporting={exportingId === `schedule-option-${idx}`} theme={theme} />
