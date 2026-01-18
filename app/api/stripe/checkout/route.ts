@@ -1,3 +1,4 @@
+// app/api/stripe/checkout/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import Stripe from "stripe";
