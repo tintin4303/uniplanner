@@ -220,7 +220,7 @@ export default function Home() {
                     onLogout={handleLogout}
                     onShowTokenModal={() => setShowTokenModal(true)}
                     onShowDonationModal={() => setShowDonationModal(true)}
-                    onAddSubject={() => { setEditingName(null); setShowAddForm(!showAddForm); }}
+                    onSavedSchedules={() => alert('Saved Schedules feature coming soon!')}
                 />
 
                 {/* Theme Button - Floating */}
@@ -269,14 +269,12 @@ export default function Home() {
                             <SubjectLibrary
                                 subjects={subjects}
                                 onToggleGroup={toggleSubjectGroup}
-                                onToggleSection={toggleSection}
-                                onEdit={handleEdit}
-                                onDelete={deleteSubjectGroup}
-                                onReset={() => { if (window.confirm('Clear all?')) persistData([]) }}
-                                theme={{
-                                    cardBg: 'bg-white',
-                                    cardBorder: 'border-slate-200'
-                                }}
+                                onToggleSection={toggleSubjectSection}
+                                onEdit={handleEditSubject}
+                                onDelete={handleDeleteSubject}
+                                onReset={resetLibrary}
+                                onAddSubject={() => { setEditingName(null); setShowAddForm(!showAddForm); }}
+                                theme={libraryTheme}
                                 validSchedulesCount={generatedSchedules.length}
                             />
                         )}

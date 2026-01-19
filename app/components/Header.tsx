@@ -1,9 +1,10 @@
 import React from 'react';
-import { GraduationCap, LogIn, LogOut, Gem, Coffee, Plus } from 'lucide-react';
+import { GraduationCap, LogIn, LogOut, Gem, Coffee } from 'lucide-react';
 import { Session } from 'next-auth';
 import Image from 'next/image';
 import { BRAND } from '@/app/lib/constants';
 import { stringToColor } from '@/app/lib/utils';
+import HamburgerMenu from './HamburgerMenu';
 
 interface HeaderProps {
     session: Session | null;
@@ -14,7 +15,7 @@ interface HeaderProps {
     onLogout: () => void;
     onShowTokenModal: () => void;
     onShowDonationModal: () => void;
-    onAddSubject: () => void;
+    onSavedSchedules: () => void;
 }
 
 export default function Header({
@@ -26,7 +27,7 @@ export default function Header({
     onLogout,
     onShowTokenModal,
     onShowDonationModal,
-    onAddSubject
+    onSavedSchedules
 }: HeaderProps) {
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
@@ -80,12 +81,10 @@ export default function Header({
                     </button>
                 </div>
 
-                {/* Right Group: Add Subject */}
+                {/* Right Group: Hamburger Menu */}
                 <div className="flex items-center">
                     <div className="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
-                    <button onClick={onAddSubject} className={`${BRAND.primary} ${BRAND.primaryHover} text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg flex items-center gap-2 transition-transform active:scale-95 whitespace-nowrap h-10`}>
-                        <Plus size={18} /> <span className="hidden sm:inline">Add Subject</span><span className="sm:hidden">Add</span>
-                    </button>
+                    <HamburgerMenu onSavedSchedules={onSavedSchedules} />
                 </div>
             </div>
         </div>
