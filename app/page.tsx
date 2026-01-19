@@ -269,12 +269,15 @@ export default function Home() {
                             <SubjectLibrary
                                 subjects={subjects}
                                 onToggleGroup={toggleSubjectGroup}
-                                onToggleSection={toggleSubjectSection}
-                                onEdit={handleEditSubject}
-                                onDelete={handleDeleteSubject}
-                                onReset={resetLibrary}
+                                onToggleSection={toggleSection}
+                                onEdit={handleEdit}
+                                onDelete={deleteSubjectGroup}
+                                onReset={() => { if (window.confirm('Clear all?')) persistData([]) }}
                                 onAddSubject={() => { setEditingName(null); setShowAddForm(!showAddForm); }}
-                                theme={libraryTheme}
+                                theme={{
+                                    cardBg: 'bg-white',
+                                    cardBorder: 'border-slate-200'
+                                }}
                                 validSchedulesCount={generatedSchedules.length}
                             />
                         )}
