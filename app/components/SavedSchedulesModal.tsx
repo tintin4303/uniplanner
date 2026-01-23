@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, Calendar, Trash2, Download } from 'lucide-react';
 import { Subject } from '@/app/lib/types';
+import ConfirmationModal, { Action } from './ConfirmationModal';
 
 interface SavedSchedule {
     id: string;
@@ -21,6 +22,13 @@ export default function SavedSchedulesModal({ isOpen, onClose, onLoad }: SavedSc
     const [error, setError] = useState('');
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [confirmation, setConfirmation] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: React.ReactNode;
+        actions: Action[];
+        variant?: 'danger' | 'info';
+    } | null>(null);
 
     useEffect(() => {
         if (isOpen) {
@@ -71,11 +79,29 @@ export default function SavedSchedulesModal({ isOpen, onClose, onLoad }: SavedSc
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this schedule?')) {
-            return;
-        }
+    const handleDelete = (id: string) => {
+        setConfirmation({
+            isOpen: true,
+            title: "Delete Saved Schedule?",
+            message: "This action cannot be undone.",
+            variant: 'danger',
+            actions: [
+                {
+                    label: "Delete",
+                    variant: 'danger',
+                    onClick: () => performDelete(id)
+                },
+                {
+                    label: "Cancel",
+                    variant: 'outline',
+                    onClick: () => setConfirmation(null)
+                }
+            ]
+        });
+    };
 
+    const performDelete = async (id: string) => {
+        setConfirmation(null);
         setDeletingId(id);
         setError('');
 
@@ -181,6 +207,18 @@ export default function SavedSchedulesModal({ isOpen, onClose, onLoad }: SavedSc
                     )}
                 </div>
             </div>
+
+            {/* Local Confirmation Modal */}
+            {confirmation && (
+                <ConfirmationModal
+                    isOpen={confirmation.isOpen}
+                    onClose={() => setConfirmation(null)}
+                    title={confirmation.title}
+                    message={confirmation.message}
+                    actions={confirmation.actions}
+                    variant={confirmation.variant}
+                />
+            )}
         </div>
     );
 }

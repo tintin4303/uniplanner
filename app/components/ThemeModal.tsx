@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { XCircle, Palette, Gem, Check, Lock, Sparkles } from 'lucide-react';
+import { Gem, Check, Lock, Palette, Layout, MousePointerClick, Type } from 'lucide-react';
+import { PALETTE } from '@/app/lib/constants';
+import { useToast } from '../context/ToastContext';
 import { Theme } from '@/app/lib/types';
 import { THEMES } from '@/app/lib/themes';
 
@@ -22,25 +24,31 @@ export default function ThemeModal({
     onActivate,
     isAuthenticated
 }: ThemeModalProps) {
-    const [purchasing, setPurchasing] = useState<string | null>(null);
+    const [processing, setProcessing] = useState<string | null>(null);
+    const { addToast } = useToast();
 
     const handlePurchase = async (themeId: string) => {
-        setPurchasing(themeId);
+        setProcessing(themeId);
         const result = await onPurchase(themeId);
-        setPurchasing(null);
-
-        if (!result.success) {
-            alert(result.error || 'Purchase failed');
-        } else {
+        setProcessing(null);
+        if (result.success) {
+            // Success logic usually handled via page refresh or context update, showing toast anyway
+            addToast("Theme purchased!", 'success');
             // Auto-activate after purchase
             await onActivate(themeId);
+        } else {
+            addToast(result.error || 'Purchase failed', 'error');
         }
     };
 
     const handleActivate = async (themeId: string) => {
+        setProcessing(themeId);
         const result = await onActivate(themeId);
-        if (!result.success) {
-            alert(result.error || 'Activation failed');
+        setProcessing(null);
+        if (result.success) {
+            addToast("Theme activated!", 'success');
+        } else {
+            addToast(result.error || 'Activation failed', 'error');
         }
     };
 

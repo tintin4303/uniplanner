@@ -12,8 +12,12 @@ interface ExportProps {
   scheduleData?: any[]; // The actual schedule data for JSON export
 }
 
+import { useToast } from '../context/ToastContext';
+
+// ... (inside component)
 export default function ExportMenu({ elementId, fileName, isExporting, onExportStart, onExportEnd, scheduleData }: ExportProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { addToast } = useToast();
 
   const handleExport = async (type: 'pdf' | 'png') => {
     setIsOpen(false);
@@ -49,7 +53,7 @@ export default function ExportMenu({ elementId, fileName, isExporting, onExportS
           }
         } catch (err) {
           console.error("Export failed", err);
-          alert("Failed to export.");
+          addToast("Failed to export.", 'error');
         }
       }
       onExportEnd();
