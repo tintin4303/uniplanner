@@ -18,12 +18,14 @@ import ScheduleList from './components/ScheduleList';
 import Footer from './components/Footer';
 import SaveScheduleModal from './components/SaveScheduleModal';
 import SavedSchedulesModal from './components/SavedSchedulesModal';
+import ConfirmationModal, { Action } from './components/ConfirmationModal';
 
 // Hooks
 import { useScheduleData } from './hooks/useScheduleData';
 import { useScheduleGenerator } from './hooks/useScheduleGenerator';
 import { useTokens } from './hooks/useTokens';
 import { useTheme } from './hooks/useTheme';
+import { useToast } from './context/ToastContext';
 
 // Types & Constants
 import { FormSection, Subject } from './lib/types';
@@ -31,6 +33,7 @@ import { BRAND, PALETTE } from './lib/constants';
 
 export default function Home() {
     const { data: session, status } = useSession();
+    const { addToast } = useToast();
 
     // Data Management
     const { subjects, isLoaded, saving, persistData, clearData } = useScheduleData();
@@ -49,6 +52,13 @@ export default function Home() {
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [showSavedSchedulesModal, setShowSavedSchedulesModal] = useState(false);
     const [scheduleToSave, setScheduleToSave] = useState<Subject[] | null>(null);
+    const [confirmation, setConfirmation] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: React.ReactNode;
+        actions: Action[];
+        variant?: 'danger' | 'info';
+    } | null>(null);
 
     // AI & Filtering
     const [isThinking, setIsThinking] = useState(false);
@@ -92,46 +102,93 @@ export default function Home() {
                 throw new Error(data.error || 'Failed to save schedule');
             }
 
-            alert('Schedule saved successfully!');
+            addToast('Schedule saved successfully!', 'success');
             setShowSaveModal(false); // Close modal on success
         } catch (error) {
             console.error('Error saving schedule:', error);
-            alert(`Failed to save schedule: ${error instanceof Error ? error.message : String(error)}`);
+            addToast(`Failed to save schedule: ${error instanceof Error ? error.message : String(error)}`, 'error');
             throw error;
         }
     };
 
     const handleLoadSchedule = (scheduleData: Subject[]) => {
-        // Check if user has existing subjects
-        if (subjects.length > 0) {
-            const choice = window.confirm(
-                `You have ${subjects.length} subject(s) in your library.\n\n` +
-                `Click OK to MERGE the saved schedule with your current subjects.\n` +
-                `Click Cancel to REPLACE all current subjects with the saved schedule.`
-            );
+        // 1. Basic Schema Validation
+        const validImportData = scheduleData.filter(s =>
+            s && typeof s.name === 'string' &&
+            (Array.isArray(s.classes) || s.noTime === true)
+        );
 
-            if (choice) {
-                // Merge: Add saved subjects to existing ones
-                const mergedSubjects = [...subjects, ...scheduleData];
-                persistData(mergedSubjects);
-                alert(`Schedule merged! Added ${scheduleData.length} subject(s) to your library.`);
-            } else {
-                // Replace: Clear and load saved schedule
-                persistData(scheduleData);
-                alert(`Schedule loaded! Replaced with ${scheduleData.length} subject(s).`);
-            }
-        } else {
-            // No existing subjects, just load
-            persistData(scheduleData);
-            alert(`Schedule loaded successfully! Added ${scheduleData.length} subject(s).`);
+        if (validImportData.length < scheduleData.length) {
+            addToast(`Warning: ${scheduleData.length - validImportData.length} items skipped (invalid data).`, 'info');
+        }
+
+        if (validImportData.length === 0) {
+            addToast("No valid subjects found in the imported file.", 'error');
+            return;
         }
 
         setShowSavedSchedulesModal(false);
+
+        // Check if user has existing subjects
+        if (subjects.length > 0) {
+            setConfirmation({
+                isOpen: true,
+                title: "Merge or Replace?",
+                message: `You have ${subjects.length} subject(s) in your library. Do you want to MERGE the new schedule with them, or REPLACE them entirely?`,
+                actions: [
+                    {
+                        label: "Merge with Existing",
+                        variant: 'primary',
+                        onClick: () => {
+                            // Merge Logic: Avoid duplicates by ID AND (Name + Section)
+                            const existingIds = new Set(subjects.map(s => s.id));
+                            const existingContentSignatures = new Set(subjects.map(s => `${s.name.toLowerCase()}-${s.section}`));
+
+                            const newSubjects = validImportData.filter(s => {
+                                const isIdDuplicate = existingIds.has(s.id);
+                                const isContentDuplicate = existingContentSignatures.has(`${s.name.toLowerCase()}-${s.section}`);
+                                return !isIdDuplicate && !isContentDuplicate;
+                            });
+
+                            const duplicatesCount = validImportData.length - newSubjects.length;
+
+                            if (newSubjects.length === 0) {
+                                addToast('No new subjects added (all imported subjects exist).', 'info');
+                            } else {
+                                const mergedSubjects = [...subjects, ...newSubjects];
+                                persistData(mergedSubjects);
+                                addToast(`Merged! Added ${newSubjects.length} new subject(s).`, 'success');
+                            }
+                            setConfirmation(null);
+                        }
+                    },
+                    {
+                        label: "Replace All",
+                        variant: 'danger',
+                        onClick: () => {
+                            // Replace: Clear and load saved schedule
+                            persistData(validImportData);
+                            addToast(`Loaded! Replaced with ${validImportData.length} subject(s).`, 'success');
+                            setConfirmation(null);
+                        }
+                    },
+                    {
+                        label: "Cancel",
+                        variant: 'outline',
+                        onClick: () => setConfirmation(null)
+                    }
+                ]
+            });
+        } else {
+            // No existing subjects, just load
+            persistData(validImportData);
+            addToast(`Loaded successfully! Added ${validImportData.length} subject(s).`, 'success');
+        }
     };
 
     const startAdFlow = () => {
         if (status !== 'authenticated') {
-            alert("Login to save tokens!");
+            addToast("Login to save tokens!", 'info');
             return;
         }
         setShowTokenModal(false);
@@ -142,16 +199,16 @@ export default function Home() {
         const result = await handleClaimAdReward();
         setShowAdOverlay(false);
         if (result.success) {
-            alert("Success! +5 Tokens added.");
+            addToast("Success! +5 Tokens added.", 'success');
         } else {
-            alert(result.error || "Failed to claim reward.");
+            addToast(result.error || "Failed to claim reward.", 'error');
         }
     };
 
     const handleBuyTokensWrapper = async (packageId: 'starter' | 'pro') => {
         const result = await handleBuyTokens(packageId);
         if (!result.success) {
-            alert(result.error);
+            addToast(result.error || "Purchase failed", 'error');
         }
     };
 
@@ -163,10 +220,10 @@ export default function Home() {
             if (response.filter) {
                 setActiveFilter(response.filter);
             }
-            if (response.message) alert(response.message);
+            if (response.message) addToast(response.message, 'info');
             setShowSmartGenModal(false);
         } else {
-            alert(response.error || "AI could not understand request.");
+            addToast(response.error || "AI could not understand request.", 'error');
             if (response.needsTokens) {
                 setShowSmartGenModal(false);
                 setShowTokenModal(true);
@@ -189,9 +246,27 @@ export default function Home() {
     };
 
     const deleteSubjectGroup = (name: string) => {
-        if (window.confirm(`Delete ${name}?`)) {
-            persistData(subjects.filter(s => s.name !== name));
-        }
+        setConfirmation({
+            isOpen: true,
+            title: "Delete Subject?",
+            message: `Are you sure you want to delete all sections of "${name}"? This cannot be undone.`,
+            variant: 'danger',
+            actions: [
+                {
+                    label: "Delete",
+                    variant: 'danger',
+                    onClick: () => {
+                        persistData(subjects.filter(s => s.name !== name));
+                        setConfirmation(null);
+                    }
+                },
+                {
+                    label: "Cancel",
+                    variant: 'outline',
+                    onClick: () => setConfirmation(null)
+                }
+            ]
+        });
     };
 
     const handleSaveSubject = (name: string, credits: number, sections: FormSection[]) => {
@@ -222,6 +297,28 @@ export default function Home() {
         setExportingId(null);
     };
 
+    const handleImportBackup = (file: File) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const content = e.target?.result as string;
+                const parsed = JSON.parse(content);
+
+                // Simple validation
+                if (!parsed.data || !Array.isArray(parsed.data)) {
+                    throw new Error("Invalid backup format");
+                }
+
+                // Reuse existing load logic
+                handleLoadSchedule(parsed.data);
+            } catch (err) {
+                console.error("Import failed", err);
+                addToast("Failed to import. File might be corrupted.", 'error');
+            }
+        };
+        reader.readAsText(file);
+    };
+
 
     if (!isLoaded) return null;
 
@@ -236,7 +333,6 @@ export default function Home() {
                     onClose={() => setShowTokenModal(false)}
                     onStartAdFlow={startAdFlow}
                     onBuyTokens={handleBuyTokensWrapper}
-                    isAuthenticated={status === 'authenticated'}
                 />
             )}
             {showSmartGenModal && (
@@ -287,6 +383,7 @@ export default function Home() {
                     onSavedSchedules={() => setShowSavedSchedulesModal(true)}
                     onShowThemeModal={() => setShowThemeModal(true)}
                     activeTheme={activeTheme}
+                    onImportBackup={handleImportBackup}
                 />
 
 
@@ -330,7 +427,29 @@ export default function Home() {
                                 onToggleSection={toggleSection}
                                 onEdit={handleEdit}
                                 onDelete={deleteSubjectGroup}
-                                onReset={() => { if (window.confirm('Clear all?')) persistData([]) }}
+                                onReset={() => {
+                                    setConfirmation({
+                                        isOpen: true,
+                                        title: "Clear Library?",
+                                        message: "Are you sure you want to delete ALL subjects from your library? This action cannot be undone.",
+                                        variant: 'danger',
+                                        actions: [
+                                            {
+                                                label: "Clear All",
+                                                variant: 'danger',
+                                                onClick: () => {
+                                                    persistData([]);
+                                                    setConfirmation(null);
+                                                }
+                                            },
+                                            {
+                                                label: "Cancel",
+                                                variant: 'outline',
+                                                onClick: () => setConfirmation(null)
+                                            }
+                                        ]
+                                    });
+                                }}
                                 onAddSubject={() => { setEditingName(null); setShowAddForm(!showAddForm); }}
                                 theme={activeTheme}
                                 validSchedulesCount={generatedSchedules.length}
@@ -368,6 +487,18 @@ export default function Home() {
                 onClose={() => setShowSavedSchedulesModal(false)}
                 onLoad={handleLoadSchedule}
             />
+
+            {/* Confirmation Modal */}
+            {confirmation && (
+                <ConfirmationModal
+                    isOpen={confirmation.isOpen}
+                    onClose={() => setConfirmation(null)}
+                    title={confirmation.title}
+                    message={confirmation.message}
+                    actions={confirmation.actions}
+                    variant={confirmation.variant}
+                />
+            )}
         </main>
     );
 }

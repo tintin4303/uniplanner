@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, ChevronDown, FileText, Image as ImageIcon } from 'lucide-react';
+import { Download, ChevronDown, FileText, Image as ImageIcon, FileJson } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 
@@ -9,9 +9,10 @@ interface ExportProps {
   isExporting: boolean;
   onExportStart: (id: string) => void;
   onExportEnd: () => void;
+  scheduleData?: any[]; // The actual schedule data for JSON export
 }
 
-export default function ExportMenu({ elementId, fileName, isExporting, onExportStart, onExportEnd }: ExportProps) {
+export default function ExportMenu({ elementId, fileName, isExporting, onExportStart, onExportEnd, scheduleData }: ExportProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleExport = async (type: 'pdf' | 'png') => {
@@ -55,6 +56,34 @@ export default function ExportMenu({ elementId, fileName, isExporting, onExportS
     }, 100);
   };
 
+  const handleJsonExport = () => {
+    if (!scheduleData) return;
+
+    // Create the backup object
+    const backup = {
+      version: '1.0',
+      type: 'uniplanner-backup',
+      timestamp: new Date().toISOString(),
+      data: scheduleData
+    };
+
+    // Serialize to JSON
+    const jsonString = JSON.stringify(backup, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    // Download file
+    const link = document.createElement('a');
+    link.download = `${fileName}.json`;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setIsOpen(false);
+  };
+
   return (
     <div className="relative">
       <button
@@ -74,8 +103,11 @@ export default function ExportMenu({ elementId, fileName, isExporting, onExportS
             <button onClick={() => handleExport('pdf')} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50 cursor-pointer">
               <FileText size={14} className="text-red-500" /> Save as PDF
             </button>
-            <button onClick={() => handleExport('png')} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 cursor-pointer">
+            <button onClick={() => handleExport('png')} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 cursor-pointer border-b border-slate-50">
               <ImageIcon size={14} className="text-blue-500" /> Save as PNG
+            </button>
+            <button onClick={handleJsonExport} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 cursor-pointer">
+              <FileJson size={14} className="text-emerald-500" /> Save as Backup File
             </button>
           </div>
         </>

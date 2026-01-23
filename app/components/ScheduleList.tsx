@@ -62,6 +62,7 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                                             isExporting={exportingId === `schedule-option-${idx}`}
                                             onExportStart={onExportStart}
                                             onExportEnd={onExportEnd}
+                                            scheduleData={schedule}
                                         />
                                     </div>
                                 </div>
@@ -108,6 +109,7 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                                         isExporting={exportingId === `schedule-option-${idx}`}
                                         onExportStart={onExportStart}
                                         onExportEnd={onExportEnd}
+                                        scheduleData={schedule}
                                     />
                                 </div>
                             </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, LogIn, LogOut, Gem, Coffee, Palette } from 'lucide-react';
+import { GraduationCap, LogIn, Gem, Coffee, Palette } from 'lucide-react';
 import { Session } from 'next-auth';
 import Image from 'next/image';
 import { BRAND } from '@/app/lib/constants';
@@ -19,6 +19,7 @@ interface HeaderProps {
     onSavedSchedules: () => void;
     onShowThemeModal: () => void;
     activeTheme: Theme;
+    onImportBackup: (file: File) => void;
 }
 
 export default function Header({
@@ -32,7 +33,8 @@ export default function Header({
     onShowDonationModal,
     onSavedSchedules,
     onShowThemeModal,
-    activeTheme
+    activeTheme,
+    onImportBackup
 }: HeaderProps) {
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
@@ -75,9 +77,6 @@ export default function Header({
                                     </span>
                                 </div>
                             </div>
-                            <button onClick={onLogout} className="text-slate-300 hover:text-red-500 ml-2 cursor-pointer hover:bg-red-50 p-1.5 rounded-full transition-all" title="Sign Out">
-                                <LogOut size={16} />
-                            </button>
                         </div>
                     ) : (
                         <button onClick={onLogin} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2 hover:shadow-md transition-shadow cursor-pointer">
@@ -107,7 +106,12 @@ export default function Header({
                 {/* Right Group: Hamburger Menu */}
                 <div className="flex items-center">
                     <div className="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
-                    <HamburgerMenu onSavedSchedules={onSavedSchedules} onShowTokenModal={onShowTokenModal} />
+                    <HamburgerMenu
+                        onSavedSchedules={onSavedSchedules}
+                        onShowTokenModal={onShowTokenModal}
+                        onImportBackup={onImportBackup}
+                        onLogout={onLogout}
+                    />
                 </div>
             </div>
         </div>
