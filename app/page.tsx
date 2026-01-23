@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Sparkles, Gem, Palette } from 'lucide-react';
+import { Sparkles, Gem } from 'lucide-react';
 import { useSession, signIn, signOut } from "next-auth/react";
 
 // Components
@@ -285,16 +285,10 @@ export default function Home() {
                     onShowTokenModal={() => setShowTokenModal(true)}
                     onShowDonationModal={() => setShowDonationModal(true)}
                     onSavedSchedules={() => setShowSavedSchedulesModal(true)}
+                    onShowThemeModal={() => setShowThemeModal(true)}
+                    activeTheme={activeTheme}
                 />
 
-                {/* Theme Button - Floating */}
-                <button
-                    onClick={() => setShowThemeModal(true)}
-                    className="fixed bottom-24 right-8 w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-40"
-                    title="Change Theme"
-                >
-                    <Palette size={24} />
-                </button>
 
                 {/* --- CONTENT AREA --- */}
                 <div className="flex flex-col xl:flex-row gap-8 items-start">

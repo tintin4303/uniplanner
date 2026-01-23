@@ -1,9 +1,10 @@
 import React from 'react';
-import { GraduationCap, LogIn, LogOut, Gem, Coffee } from 'lucide-react';
+import { GraduationCap, LogIn, LogOut, Gem, Coffee, Palette } from 'lucide-react';
 import { Session } from 'next-auth';
 import Image from 'next/image';
 import { BRAND } from '@/app/lib/constants';
 import { stringToColor } from '@/app/lib/utils';
+import { Theme } from '@/app/lib/types';
 import HamburgerMenu from './HamburgerMenu';
 
 interface HeaderProps {
@@ -16,6 +17,8 @@ interface HeaderProps {
     onShowTokenModal: () => void;
     onShowDonationModal: () => void;
     onSavedSchedules: () => void;
+    onShowThemeModal: () => void;
+    activeTheme: Theme;
 }
 
 export default function Header({
@@ -27,7 +30,9 @@ export default function Header({
     onLogout,
     onShowTokenModal,
     onShowDonationModal,
-    onSavedSchedules
+    onSavedSchedules,
+    onShowThemeModal,
+    activeTheme
 }: HeaderProps) {
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
@@ -57,16 +62,19 @@ export default function Header({
                             )}
                             <div className="text-xs text-left">
                                 <div className="font-bold text-slate-700">{session?.user?.name}</div>
-                                <div onClick={onShowTokenModal} className="text-pink-500 font-bold text-[10px] cursor-pointer hover:underline flex items-center gap-1">
-                                    <Gem size={10} /> {tokens} Tokens
+                                <div onClick={onShowTokenModal} className="font-bold text-[10px] cursor-pointer hover:underline flex items-center gap-1">
+                                    <Gem size={10} className={activeTheme.colors.accent} />
+                                    <span className={`${activeTheme.colors.header} bg-clip-text text-transparent`}>
+                                        {tokens} Tokens
+                                    </span>
                                 </div>
                             </div>
-                            <button onClick={onLogout} className="text-slate-400 hover:text-red-500 ml-2" title="Sign Out">
+                            <button onClick={onLogout} className="text-slate-400 hover:text-red-500 ml-2 cursor-pointer" title="Sign Out">
                                 <LogOut size={16} />
                             </button>
                         </div>
                     ) : (
-                        <button onClick={onLogin} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2 hover:shadow-md transition-shadow">
+                        <button onClick={onLogin} className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-full font-bold text-sm shadow-sm flex items-center gap-2 hover:shadow-md transition-shadow cursor-pointer">
                             <LogIn size={16} /> Login to Sync
                         </button>
                     )}
@@ -74,10 +82,19 @@ export default function Header({
                     {/* COFFEE BUTTON */}
                     <button
                         onClick={onShowDonationModal}
-                        className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-white hover:bg-yellow-50 text-yellow-500 border border-slate-200 hover:border-yellow-200 rounded-full shadow-sm transition-all active:scale-95"
+                        className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-white hover:bg-yellow-50 text-yellow-500 border border-slate-200 hover:border-yellow-200 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer"
                         title="Buy me a coffee"
                     >
                         <Coffee size={20} />
+                    </button>
+
+                    {/* THEME BUTTON */}
+                    <button
+                        onClick={onShowThemeModal}
+                        className={`flex-shrink-0 h-10 w-10 flex items-center justify-center ${activeTheme.colors.header} ${activeTheme.colors.headerText} border border-slate-200 rounded-full shadow-sm transition-all active:scale-95 hover:opacity-90 cursor-pointer`}
+                        title="Change Theme"
+                    >
+                        <Palette size={20} />
                     </button>
                 </div>
 

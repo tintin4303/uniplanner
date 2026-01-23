@@ -52,7 +52,7 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => onSave(schedule, idx)}
-                                            className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                                            className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
                                         >
                                             <Save size={14} /> Save
                                         </button>
@@ -98,7 +98,7 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                                 <div className="flex gap-2 flex-shrink-0">
                                     <button
                                         onClick={() => onSave(schedule, idx)}
-                                        className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                                        className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
                                     >
                                         <Save size={14} /> Save
                                     </button>

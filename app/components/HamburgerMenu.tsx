@@ -12,7 +12,7 @@ export default function HamburgerMenu({ onSavedSchedules }: HamburgerMenuProps) 
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="h-10 w-10 flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full shadow-sm transition-all active:scale-95"
+                className="h-10 w-10 flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer"
                 title="Menu"
             >
                 {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -30,7 +30,7 @@ export default function HamburgerMenu({ onSavedSchedules }: HamburgerMenuProps) 
                                 onSavedSchedules();
                                 setIsOpen(false);
                             }}
-                            className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                            className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors cursor-pointer"
                         >
                             <BookMarked size={18} className="text-indigo-500" />
                             Saved Schedules

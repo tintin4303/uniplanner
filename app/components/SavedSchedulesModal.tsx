@@ -150,7 +150,7 @@ export default function SavedSchedulesModal({ isOpen, onClose, onLoad }: SavedSc
                                             <button
                                                 onClick={() => handleLoad(schedule.id)}
                                                 disabled={loadingId === schedule.id || deletingId === schedule.id}
-                                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
                                             >
                                                 {loadingId === schedule.id ? (
                                                     <>
@@ -165,7 +165,7 @@ export default function SavedSchedulesModal({ isOpen, onClose, onLoad }: SavedSc
                                             <button
                                                 onClick={() => handleDelete(schedule.id)}
                                                 disabled={deletingId === schedule.id || loadingId === schedule.id}
-                                                className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                             >
                                                 {deletingId === schedule.id ? (
                                                     <Loader2 size={14} className="animate-spin" />

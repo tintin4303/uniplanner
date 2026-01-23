@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { CheckCircle, Edit2, Trash2, BookOpen, Clock, Plus } from 'lucide-react';
+import { CheckCircle, Edit2, Trash2, BookOpen, Plus } from 'lucide-react';
 import { BRAND } from '@/app/lib/constants';
 import { Subject } from '@/app/lib/types';
 
@@ -44,10 +44,10 @@ export default function SubjectLibrary({ subjects, onToggleGroup, onToggleSectio
         <div className="flex justify-between items-center mb-4">
           <h3 className={`font-bold text-sm uppercase opacity-50`}>Library</h3>
           <div className="flex items-center gap-2">
-            <button onClick={onAddSubject} className={`${BRAND.primary} ${BRAND.primaryHover} text-white px-4 py-1.5 rounded-full font-bold text-xs shadow-md flex items-center gap-1.5 transition-transform active:scale-95`}>
+            <button onClick={onAddSubject} className={`${BRAND.primary} ${BRAND.primaryHover} text-white px-4 py-1.5 rounded-full font-bold text-xs shadow-md flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer`}>
               <Plus size={14} /> Add Subject
             </button>
-            <button onClick={onReset} className="text-xs text-red-400 hover:text-red-600 transition-colors">Reset</button>
+            <button onClick={onReset} className="text-xs text-red-400 hover:text-red-600 transition-colors cursor-pointer">Reset</button>
           </div>
         </div>
 
@@ -70,8 +70,8 @@ export default function SubjectLibrary({ subjects, onToggleGroup, onToggleSectio
                   <div className={`w-3 h-3 rounded-full ${themeColor}`}></div>
                   <div className="flex-1 font-bold text-sm opacity-80">{name} <span className="opacity-50 font-normal text-xs ml-1">({credits} Cr)</span></div>
                   <div className="flex gap-1">
-                    <button onClick={() => onEdit(name)} className={`p-1 opacity-50 hover:opacity-100 transition-colors`}><Edit2 size={14} /></button>
-                    <button onClick={() => onDelete(name)} className="p-1 opacity-50 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                    <button onClick={() => onEdit(name)} className={`p-1 opacity-50 hover:opacity-100 transition-colors cursor-pointer`}><Edit2 size={14} /></button>
+                    <button onClick={() => onDelete(name)} className="p-1 opacity-50 hover:text-red-500 transition-colors cursor-pointer"><Trash2 size={14} /></button>
                   </div>
                 </div>
                 <div className="p-2 space-y-1">
