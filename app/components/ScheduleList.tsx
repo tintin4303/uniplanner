@@ -35,24 +35,70 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                     <div key={idx} className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
 
                         {/* --- HEADER CONTAINER --- */}
-                        <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4 px-4 md:px-0 md:ml-4">
+                        <div className="flex flex-col xl:flex-row xl:items-center gap-3 mb-4 px-4 xl:px-0 xl:ml-4">
 
-                            {/* TOP ROW: Option + Credits + Mobile Export */}
-                            <div className="flex items-center justify-between w-full md:w-auto gap-3">
-                                <div className="flex items-center gap-3">
-                                    <div className={`${BRAND.secondary} text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg whitespace-nowrap`}>
-                                        Option #{idx + 1}
+                            {/* Mobile Layout: Stacked */}
+                            <div className="xl:hidden space-y-3">
+                                {/* Row 1: Badges + Buttons */}
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className={`${BRAND.secondary} text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg whitespace-nowrap`}>
+                                            Option #{idx + 1}
+                                        </div>
+                                        <div className={`text-xs font-bold ${BRAND.accent} ${BRAND.accentBg} px-3 py-1 rounded-full border ${BRAND.accentBorder} whitespace-nowrap`}>
+                                            {calculateCredits(schedule)} Credits
+                                        </div>
                                     </div>
-                                    <div className={`text-xs font-bold ${BRAND.accent} ${BRAND.accentBg} px-3 py-1 rounded-full border ${BRAND.accentBorder} whitespace-nowrap`}>
-                                        {calculateCredits(schedule)} Credits
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => onSave(schedule, idx)}
+                                            className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                                        >
+                                            <Save size={14} /> Save
+                                        </button>
+                                        <ExportMenu
+                                            elementId={`schedule-option-${idx}`}
+                                            fileName={`schedule-option-${idx + 1}`}
+                                            isExporting={exportingId === `schedule-option-${idx}`}
+                                            onExportStart={onExportStart}
+                                            onExportEnd={onExportEnd}
+                                        />
                                     </div>
                                 </div>
+                                {/* Row 2: Tags */}
+                                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 pb-1 mask-linear">
+                                    {tags.map((tag, tIdx) => (
+                                        <div key={tIdx} className={`px-2 py-1 rounded-full text-[10px] font-bold border flex-shrink-0 flex items-center gap-1 ${tag.color} whitespace-nowrap`}>
+                                            <tag.icon size={12} /> {tag.text}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
-                                {/* Save & Export Buttons (Visible on Mobile Only here) */}
-                                <div className="md:hidden flex gap-2">
+                            {/* Desktop Layout: Single Row */}
+                            <div className="hidden xl:flex items-center gap-3 w-full">
+                                {/* Badges */}
+                                <div className={`${BRAND.secondary} text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg whitespace-nowrap`}>
+                                    Option #{idx + 1}
+                                </div>
+                                <div className={`text-xs font-bold ${BRAND.accent} ${BRAND.accentBg} px-3 py-1.5 rounded-full border ${BRAND.accentBorder} whitespace-nowrap`}>
+                                    {calculateCredits(schedule)} Credits
+                                </div>
+
+                                {/* Tags */}
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    {tags.map((tag, tIdx) => (
+                                        <div key={tIdx} className={`px-2 py-1 rounded-full text-[10px] font-bold border flex-shrink-0 flex items-center gap-1 ${tag.color} whitespace-nowrap`}>
+                                            <tag.icon size={12} /> {tag.text}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Buttons */}
+                                <div className="flex gap-2 flex-shrink-0">
                                     <button
                                         onClick={() => onSave(schedule, idx)}
-                                        className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                                        className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
                                     >
                                         <Save size={14} /> Save
                                     </button>
@@ -64,33 +110,6 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                                         onExportEnd={onExportEnd}
                                     />
                                 </div>
-                            </div>
-
-                            {/* TAGS ROW (Scrollable on Mobile) */}
-                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto pb-1 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 mask-linear">
-                                {tags.map((tag, tIdx) => (
-                                    <div key={tIdx} className={`px-2 py-1 rounded-full text-[10px] font-bold border flex-shrink-0 flex items-center gap-1 ${tag.color} whitespace-nowrap`}>
-                                        <tag.icon size={12} /> {tag.text}
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Save & Export Buttons (Desktop Only) */}
-                            <div className="hidden md:block flex-1 h-px bg-slate-200 mx-2"></div>
-                            <div className="hidden md:flex gap-2">
-                                <button
-                                    onClick={() => onSave(schedule, idx)}
-                                    className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95"
-                                >
-                                    <Save size={16} /> Save
-                                </button>
-                                <ExportMenu
-                                    elementId={`schedule-option-${idx}`}
-                                    fileName={`schedule-option-${idx + 1}`}
-                                    isExporting={exportingId === `schedule-option-${idx}`}
-                                    onExportStart={onExportStart}
-                                    onExportEnd={onExportEnd}
-                                />
                             </div>
                         </div>
 

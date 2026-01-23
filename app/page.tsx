@@ -297,10 +297,10 @@ export default function Home() {
                 </button>
 
                 {/* --- CONTENT AREA --- */}
-                <div className="flex flex-col lg:flex-row gap-8 items-start">
+                <div className="flex flex-col xl:flex-row gap-8 items-start">
 
                     {/* SIDEBAR / TOP BAR */}
-                    <div className="w-full lg:w-[400px] flex-shrink-0 space-y-6">
+                    <div className="w-full xl:w-[400px] flex-shrink-0 space-y-6">
 
                         {/* Smart AI Button */}
                         <div
