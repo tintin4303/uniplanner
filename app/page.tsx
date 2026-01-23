@@ -241,7 +241,7 @@ export default function Home() {
                         {/* Smart AI Button */}
                         <div
                             onClick={() => setShowSmartGenModal(true)}
-                            className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 rounded-2xl shadow-xl text-white cursor-pointer hover:scale-[1.02] transition-transform flex items-center gap-4 relative overflow-hidden group"
+                            className={`${activeTheme.colors.header} p-4 rounded-2xl shadow-xl ${activeTheme.colors.headerText} cursor-pointer hover:scale-[1.02] transition-transform flex items-center gap-4 relative overflow-hidden group`}
                         >
                             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             <div className="bg-white/20 p-2 rounded-lg">
@@ -249,7 +249,7 @@ export default function Home() {
                             </div>
                             <div>
                                 <h3 className="font-bold text-sm">Smart AI Scheduler</h3>
-                                <p className="text-xs text-indigo-100 opacity-80">"I want Fridays off..."</p>
+                                <p className="text-xs opacity-80">"I want Fridays off..."</p>
                             </div>
                             <div className="ml-auto bg-black/20 px-2 py-1 rounded text-[10px] font-bold">
                                 5 <Gem size={8} className="inline" />
@@ -274,10 +274,7 @@ export default function Home() {
                                 onDelete={deleteSubjectGroup}
                                 onReset={() => { if (window.confirm('Clear all?')) persistData([]) }}
                                 onAddSubject={() => { setEditingName(null); setShowAddForm(!showAddForm); }}
-                                theme={{
-                                    cardBg: 'bg-white',
-                                    cardBorder: 'border-slate-200'
-                                }}
+                                theme={activeTheme}
                                 validSchedulesCount={generatedSchedules.length}
                             />
                         )}

@@ -40,7 +40,7 @@ export default function SubjectLibrary({ subjects, onToggleGroup, onToggleSectio
   return (
     <>
       {/* LIBRARY LIST */}
-      <div className={`${theme.cardBg} p-6 rounded-3xl shadow-lg border ${theme.cardBorder}`}>
+      <div className="bg-white p-6 rounded-3xl shadow-lg border border-slate-200">
         <div className="flex justify-between items-center mb-4">
           <h3 className={`font-bold text-sm uppercase opacity-50`}>Library</h3>
           <div className="flex items-center gap-2">
@@ -57,16 +57,17 @@ export default function SubjectLibrary({ subjects, onToggleGroup, onToggleSectio
           {Object.entries(groupedSubjects).map(([name, group]) => {
             const allActive = group.every(s => s.active);
             const someActive = group.some(s => s.active);
-            const color = group[0].color;
+            const subjectIndex = Object.keys(groupedSubjects).indexOf(name);
+            const themeColor = theme.colors.subjectPalette[subjectIndex % theme.colors.subjectPalette.length];
             const credits = group[0].credits || 0;
 
             return (
-              <div key={name} className={`border ${theme.cardBorder} rounded-2xl overflow-hidden bg-black/5 transition-all hover:shadow-sm`}>
-                <div className={`${theme.cardBg} p-3 border-b ${theme.cardBorder} flex items-center gap-3`}>
+              <div key={name} className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50 transition-all hover:shadow-sm">
+                <div className="bg-white p-3 border-b border-slate-200 flex items-center gap-3">
                   <div className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer transition-colors ${someActive ? `${BRAND.primary} border-transparent` : 'border-slate-300'}`} onClick={() => onToggleGroup(name, !allActive)}>
                     {someActive && <CheckCircle size={10} className="text-white" />}
                   </div>
-                  <div className={`w-3 h-3 rounded-full ${color}`}></div>
+                  <div className={`w-3 h-3 rounded-full ${themeColor}`}></div>
                   <div className="flex-1 font-bold text-sm opacity-80">{name} <span className="opacity-50 font-normal text-xs ml-1">({credits} Cr)</span></div>
                   <div className="flex gap-1">
                     <button onClick={() => onEdit(name)} className={`p-1 opacity-50 hover:opacity-100 transition-colors`}><Edit2 size={14} /></button>
@@ -75,7 +76,7 @@ export default function SubjectLibrary({ subjects, onToggleGroup, onToggleSectio
                 </div>
                 <div className="p-2 space-y-1">
                   {group.map(s => (
-                    <div key={s.id} className={`flex items-center gap-3 p-2 rounded-xl text-xs ${s.active ? `${theme.cardBg} shadow-sm` : 'opacity-50'} transition-all`}>
+                    <div key={s.id} className={`flex items-center gap-3 p-2 rounded-xl text-xs ${s.active ? 'bg-white shadow-sm' : 'opacity-50'} transition-all`}>
                       <input type="checkbox" checked={s.active} onChange={() => onToggleSection(s.id)} className={`rounded ${BRAND.primaryText} cursor-pointer`} />
                       <span className="font-mono font-bold bg-black/10 px-1 rounded text-[10px]">SEC {s.section}</span>
                       <div className="flex-1 text-[10px]">
@@ -91,11 +92,11 @@ export default function SubjectLibrary({ subjects, onToggleGroup, onToggleSectio
       </div>
 
       {/* SUMMARY CARD */}
-      <div className={`${BRAND.secondary} text-white p-6 rounded-3xl shadow-xl mt-6`}>
+      <div className={`${theme.colors.header} ${theme.colors.headerText} p-6 rounded-3xl shadow-xl mt-6`}>
         <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><BookOpen size={18} /> Summary</h3>
-        <div className="flex justify-between items-center mb-2"><span className="text-slate-400 text-sm">Active Subjects</span><span className="text-white font-bold">{activeSubjectsCount}</span></div>
-        <div className="flex justify-between items-center mb-4"><span className="text-slate-400 text-sm">Valid Schedules</span><div className="px-2 py-1 bg-white/10 rounded-lg text-xs font-bold flex items-center gap-2"><CheckCircle size={12} className={BRAND.accent} /> {validSchedulesCount} Options</div></div>
-        <div className="flex justify-between items-center pt-2 border-t border-slate-800"><span className="text-slate-400 text-sm">Total Credits (Possible)</span><span className={`${BRAND.accent} font-black text-xl`}>{totalActiveCredits}</span></div>
+        <div className="flex justify-between items-center mb-2"><span className="opacity-70 text-sm">Active Subjects</span><span className="font-bold">{activeSubjectsCount}</span></div>
+        <div className="flex justify-between items-center mb-4"><span className="opacity-70 text-sm">Valid Schedules</span><div className="px-2 py-1 bg-white/10 rounded-lg text-xs font-bold flex items-center gap-2"><CheckCircle size={12} className={BRAND.accent} /> {validSchedulesCount} Options</div></div>
+        <div className="flex justify-between items-center pt-2 border-t border-white/20"><span className="opacity-70 text-sm">Total Credits (Possible)</span><span className={`${BRAND.accent} font-black text-xl`}>{totalActiveCredits}</span></div>
       </div>
     </>
   );
