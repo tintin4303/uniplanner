@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Save } from 'lucide-react';
 import ScheduleTable from './ScheduleTable';
 import ExportMenu from './Export';
 import { Subject, Theme } from '@/app/lib/types';
@@ -11,10 +11,11 @@ interface ScheduleListProps {
     onExportStart: (id: string) => void;
     onExportEnd: () => void;
     exportingId: string | null;
+    onSave: (schedule: Subject[], index: number) => void;
     theme?: Theme;
 }
 
-export default function ScheduleList({ schedules, onExportStart, onExportEnd, exportingId, theme }: ScheduleListProps) {
+export default function ScheduleList({ schedules, onExportStart, onExportEnd, exportingId, onSave, theme }: ScheduleListProps) {
     const calculateCredits = (schedule: Subject[]) => schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
 
     if (schedules.length === 0) {
@@ -47,8 +48,14 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                                     </div>
                                 </div>
 
-                                {/* Export Button (Visible on Mobile Only here) */}
-                                <div className="md:hidden">
+                                {/* Save & Export Buttons (Visible on Mobile Only here) */}
+                                <div className="md:hidden flex gap-2">
+                                    <button
+                                        onClick={() => onSave(schedule, idx)}
+                                        className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+                                    >
+                                        <Save size={14} /> Save
+                                    </button>
                                     <ExportMenu
                                         elementId={`schedule-option-${idx}`}
                                         fileName={`schedule-option-${idx + 1}`}
@@ -68,9 +75,15 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                                 ))}
                             </div>
 
-                            {/* Export Button (Desktop Only) */}
+                            {/* Save & Export Buttons (Desktop Only) */}
                             <div className="hidden md:block flex-1 h-px bg-slate-200 mx-2"></div>
-                            <div className="hidden md:block">
+                            <div className="hidden md:flex gap-2">
+                                <button
+                                    onClick={() => onSave(schedule, idx)}
+                                    className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95"
+                                >
+                                    <Save size={16} /> Save
+                                </button>
                                 <ExportMenu
                                     elementId={`schedule-option-${idx}`}
                                     fileName={`schedule-option-${idx + 1}`}

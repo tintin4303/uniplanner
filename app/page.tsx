@@ -16,6 +16,8 @@ import AddSubjectForm from './components/AddSubjectForm';
 import SubjectLibrary from './components/SubjectLibrary';
 import ScheduleList from './components/ScheduleList';
 import Footer from './components/Footer';
+import SaveScheduleModal from './components/SaveScheduleModal';
+import SavedSchedulesModal from './components/SavedSchedulesModal';
 
 // Hooks
 import { useScheduleData } from './hooks/useScheduleData';
@@ -44,6 +46,9 @@ export default function Home() {
     const [showAdOverlay, setShowAdOverlay] = useState(false);
     const [showDonationModal, setShowDonationModal] = useState(false);
     const [showThemeModal, setShowThemeModal] = useState(false);
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [showSavedSchedulesModal, setShowSavedSchedulesModal] = useState(false);
+    const [scheduleToSave, setScheduleToSave] = useState<Subject[] | null>(null);
 
     // AI & Filtering
     const [isThinking, setIsThinking] = useState(false);
@@ -59,10 +64,69 @@ export default function Home() {
     const { generatedSchedules, groupedSubjects, calculateTotalActiveCredits } = useScheduleGenerator(subjects, isLoaded, activeFilter);
 
     // Handlers
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await signOut({ redirect: false });
         clearData();
         setTokens(0);
-        signOut();
+    };
+
+    // Save Schedule Handlers
+    const handleSaveSchedule = (schedule: Subject[], index: number) => {
+        setScheduleToSave(schedule);
+        setShowSaveModal(true);
+    };
+
+    const handleSaveScheduleSubmit = async (name: string) => {
+        if (!scheduleToSave) return;
+
+        try {
+            const response = await fetch('/api/schedules/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, scheduleData: scheduleToSave })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to save schedule');
+            }
+
+            alert('Schedule saved successfully!');
+            setShowSaveModal(false); // Close modal on success
+        } catch (error) {
+            console.error('Error saving schedule:', error);
+            alert(`Failed to save schedule: ${error instanceof Error ? error.message : String(error)}`);
+            throw error;
+        }
+    };
+
+    const handleLoadSchedule = (scheduleData: Subject[]) => {
+        // Check if user has existing subjects
+        if (subjects.length > 0) {
+            const choice = window.confirm(
+                `You have ${subjects.length} subject(s) in your library.\n\n` +
+                `Click OK to MERGE the saved schedule with your current subjects.\n` +
+                `Click Cancel to REPLACE all current subjects with the saved schedule.`
+            );
+
+            if (choice) {
+                // Merge: Add saved subjects to existing ones
+                const mergedSubjects = [...subjects, ...scheduleData];
+                persistData(mergedSubjects);
+                alert(`Schedule merged! Added ${scheduleData.length} subject(s) to your library.`);
+            } else {
+                // Replace: Clear and load saved schedule
+                persistData(scheduleData);
+                alert(`Schedule loaded! Replaced with ${scheduleData.length} subject(s).`);
+            }
+        } else {
+            // No existing subjects, just load
+            persistData(scheduleData);
+            alert(`Schedule loaded successfully! Added ${scheduleData.length} subject(s).`);
+        }
+
+        setShowSavedSchedulesModal(false);
     };
 
     const startAdFlow = () => {
@@ -220,7 +284,7 @@ export default function Home() {
                     onLogout={handleLogout}
                     onShowTokenModal={() => setShowTokenModal(true)}
                     onShowDonationModal={() => setShowDonationModal(true)}
-                    onSavedSchedules={() => alert('Saved Schedules feature coming soon!')}
+                    onSavedSchedules={() => setShowSavedSchedulesModal(true)}
                 />
 
                 {/* Theme Button - Floating */}
@@ -287,6 +351,7 @@ export default function Home() {
                             onExportStart={handleExportStart}
                             onExportEnd={handleExportEnd}
                             exportingId={exportingId}
+                            onSave={handleSaveSchedule}
                             theme={activeTheme}
                         />
                     </div>
@@ -295,6 +360,20 @@ export default function Home() {
                 {/* FOOTER */}
                 <Footer onShowDonationModal={() => setShowDonationModal(true)} />
             </div>
+
+            {/* Save Schedule Modal */}
+            <SaveScheduleModal
+                isOpen={showSaveModal}
+                onClose={() => setShowSaveModal(false)}
+                onSave={handleSaveScheduleSubmit}
+            />
+
+            {/* Saved Schedules Modal */}
+            <SavedSchedulesModal
+                isOpen={showSavedSchedulesModal}
+                onClose={() => setShowSavedSchedulesModal(false)}
+                onLoad={handleLoadSchedule}
+            />
         </main>
     );
 }
