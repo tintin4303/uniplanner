@@ -37,8 +37,14 @@ export default function Header({
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>
-                <h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-                    <GraduationCap className={BRAND.logoColor} size={32} /> {BRAND.name}
+                <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 group cursor-default">
+                    <div className="relative">
+                        <div className={`absolute inset-0 ${activeTheme.colors.header} blur-xl opacity-20 rounded-full group-hover:opacity-40 transition-opacity`}></div>
+                        <GraduationCap className={`${activeTheme.colors.accent} relative z-10 transition-transform group-hover:rotate-12 duration-300`} size={32} />
+                    </div>
+                    <span className={`${activeTheme.colors.header} bg-clip-text text-transparent bg-center`}>
+                        {BRAND.name}
+                    </span>
                 </h1>
             </div>
 
@@ -50,26 +56,26 @@ export default function Header({
                     {status === 'loading' ? (
                         <div className="flex items-center gap-3 bg-white p-2 rounded-full shadow-sm border border-slate-200 animate-pulse w-48 h-12"></div>
                     ) : status === 'authenticated' ? (
-                        <div className="flex items-center gap-3 bg-white p-1 pr-4 rounded-full shadow-sm border border-slate-200">
+                        <div className="flex items-center gap-3 bg-white p-1.5 pr-5 rounded-full shadow-md border border-slate-100 hover:shadow-lg transition-all hover:scale-[1.01] group/profile">
                             {session?.user?.image ? (
-                                <div className="relative w-8 h-8">
+                                <div className="relative w-8 h-8 group-hover/profile:scale-110 transition-transform duration-300">
                                     <Image src={session.user.image} alt="User" fill className="rounded-full object-cover" sizes="32px" />
                                 </div>
                             ) : (
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs" style={{ backgroundColor: stringToColor(session?.user?.name || 'User') }}>
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs group-hover/profile:scale-110 transition-transform duration-300" style={{ backgroundColor: stringToColor(session?.user?.name || 'User') }}>
                                     {(session?.user?.name?.[0] || 'U').toUpperCase()}
                                 </div>
                             )}
                             <div className="text-xs text-left">
-                                <div className="font-bold text-slate-700">{session?.user?.name}</div>
-                                <div onClick={onShowTokenModal} className="font-bold text-[10px] cursor-pointer hover:underline flex items-center gap-1">
-                                    <Gem size={10} className={activeTheme.colors.accent} />
+                                <div className="font-bold text-slate-700 group-hover/profile:text-slate-900 transition-colors">{session?.user?.name}</div>
+                                <div onClick={onShowTokenModal} className="font-bold text-[10px] cursor-pointer hover:underline flex items-center gap-1 group/tokens">
+                                    <Gem size={10} className={`${activeTheme.colors.accent} group-hover/tokens:scale-110 transition-transform`} />
                                     <span className={`${activeTheme.colors.header} bg-clip-text text-transparent`}>
                                         {tokens} Tokens
                                     </span>
                                 </div>
                             </div>
-                            <button onClick={onLogout} className="text-slate-400 hover:text-red-500 ml-2 cursor-pointer" title="Sign Out">
+                            <button onClick={onLogout} className="text-slate-300 hover:text-red-500 ml-2 cursor-pointer hover:bg-red-50 p-1.5 rounded-full transition-all" title="Sign Out">
                                 <LogOut size={16} />
                             </button>
                         </div>
@@ -82,7 +88,7 @@ export default function Header({
                     {/* COFFEE BUTTON */}
                     <button
                         onClick={onShowDonationModal}
-                        className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-white hover:bg-yellow-50 text-yellow-500 border border-slate-200 hover:border-yellow-200 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer"
+                        className="flex-shrink-0 h-11 w-11 flex items-center justify-center bg-white hover:bg-yellow-50 text-slate-400 hover:text-yellow-500 border border-slate-200 hover:border-yellow-200 rounded-full shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
                         title="Buy me a coffee"
                     >
                         <Coffee size={20} />
@@ -91,7 +97,7 @@ export default function Header({
                     {/* THEME BUTTON */}
                     <button
                         onClick={onShowThemeModal}
-                        className={`flex-shrink-0 h-10 w-10 flex items-center justify-center ${activeTheme.colors.header} ${activeTheme.colors.headerText} border border-slate-200 rounded-full shadow-sm transition-all active:scale-95 hover:opacity-90 cursor-pointer`}
+                        className={`flex-shrink-0 h-11 w-11 flex items-center justify-center ${activeTheme.colors.header} ${activeTheme.colors.headerText} border border-slate-200 rounded-full shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 hover:opacity-90 cursor-pointer`}
                         title="Change Theme"
                     >
                         <Palette size={20} />
