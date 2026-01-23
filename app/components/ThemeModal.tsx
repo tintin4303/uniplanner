@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Gem, Check, Lock, Palette, Layout, MousePointerClick, Type } from 'lucide-react';
+import { Gem, Check, Lock, Palette, Layout, MousePointerClick, Type, XCircle, Sparkles } from 'lucide-react';
 import { PALETTE } from '@/app/lib/constants';
 import { useToast } from '../context/ToastContext';
 import { Theme } from '@/app/lib/types';
@@ -164,10 +164,10 @@ export default function ThemeModal({
                                     // Not purchased
                                     <button
                                         onClick={() => handlePurchase(theme.id)}
-                                        disabled={!isAuthenticated || !canAfford || purchasing === theme.id}
+                                        disabled={!isAuthenticated || !canAfford || processing === theme.id}
                                         className={`w-full py-2 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${!isAuthenticated || !canAfford
                                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                            : purchasing === theme.id
+                                            : processing === theme.id
                                                 ? 'bg-slate-300 text-slate-600 cursor-wait'
                                                 : 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white active:scale-95 cursor-pointer'
                                             }`}
@@ -180,7 +180,7 @@ export default function ThemeModal({
                                             <>
                                                 <Lock size={14} /> {theme.price} Tokens
                                             </>
-                                        ) : purchasing === theme.id ? (
+                                        ) : processing === theme.id ? (
                                             'Purchasing...'
                                         ) : (
                                             <>

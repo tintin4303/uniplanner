@@ -46,7 +46,7 @@ export default function SmartAIModal({ onClose, onSubmit, isThinking }: SmartAIM
                     <h2 className="text-xl font-black text-slate-800 flex items-center gap-2">
                         <Sparkles className="text-indigo-500 fill-indigo-500" /> Smart AI
                     </h2>
-                    <button onClick={onClose}>
+                    <button onClick={onClose} className="cursor-pointer">
                         <XCircle className="text-slate-300 hover:text-slate-500 transition-colors" />
                     </button>
                 </div>
@@ -74,7 +74,7 @@ export default function SmartAIModal({ onClose, onSubmit, isThinking }: SmartAIM
                     <button
                         onClick={handleSubmit}
                         disabled={isThinking || !aiPrompt}
-                        className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2 transition-all active:scale-95"
+                        className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-xl font-bold shadow-lg flex items-center gap-2 transition-all active:scale-95 cursor-pointer"
                     >
                         {isThinking ? (
                             <>

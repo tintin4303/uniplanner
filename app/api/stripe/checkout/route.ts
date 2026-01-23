@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import Stripe from "stripe";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/lib/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover", // Ensure this matches your error message version
@@ -21,15 +21,15 @@ export async function POST(req: Request) {
     // --- PRICING STRATEGY (THB) ---
     // Option 1: Starter (Decoy) - 35 THB (~$1) for 100 Tokens
     // Option 2: Pro (Best Value) - 150 THB (~$4.50) for 500 Tokens
-    
+
     let priceAmount = 3500; // 35.00 THB (Stripe expects satang/cents)
     let tokenAmount = 100;
     let packageName = "Starter Token Pack";
 
     if (packageId === 'pro') {
-        priceAmount = 15000; // 150.00 THB
-        tokenAmount = 500;
-        packageName = "Pro Token Pack (500)";
+      priceAmount = 15000; // 150.00 THB
+      tokenAmount = 500;
+      packageName = "Pro Token Pack (500)";
     }
 
     const checkoutSession = await stripe.checkout.sessions.create({
