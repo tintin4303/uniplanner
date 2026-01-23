@@ -69,7 +69,7 @@ export default function ThemeModal({
                             <p className="text-sm text-slate-500">Customize your schedule display</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="text-slate-300 hover:text-slate-500 transition-colors">
+                    <button onClick={onClose} className="text-slate-300 hover:text-slate-500 transition-colors cursor-pointer">
                         <XCircle size={24} />
                     </button>
                 </div>
@@ -95,8 +95,8 @@ export default function ThemeModal({
                             <div
                                 key={theme.id}
                                 className={`border-2 rounded-2xl p-4 transition-all ${isActive
-                                        ? 'border-indigo-500 bg-indigo-50 shadow-lg'
-                                        : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
+                                    ? 'border-indigo-500 bg-indigo-50 shadow-lg'
+                                    : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
                                     }`}
                             >
                                 {/* Theme Preview */}
@@ -134,8 +134,8 @@ export default function ThemeModal({
                                         onClick={() => !isActive && handleActivate(theme.id)}
                                         disabled={isActive}
                                         className={`w-full py-2 rounded-xl font-bold text-sm transition-all ${isActive
-                                                ? 'bg-emerald-100 text-emerald-700 cursor-default'
-                                                : 'bg-emerald-500 hover:bg-emerald-600 text-white active:scale-95'
+                                            ? 'bg-emerald-100 text-emerald-700 cursor-default'
+                                            : 'bg-emerald-500 hover:bg-emerald-600 text-white active:scale-95 cursor-pointer'
                                             }`}
                                     >
                                         {isActive ? 'Active' : 'Activate'}
@@ -146,8 +146,8 @@ export default function ThemeModal({
                                         onClick={() => !isActive && handleActivate(theme.id)}
                                         disabled={isActive}
                                         className={`w-full py-2 rounded-xl font-bold text-sm transition-all ${isActive
-                                                ? 'bg-indigo-100 text-indigo-700 cursor-default'
-                                                : 'bg-indigo-500 hover:bg-indigo-600 text-white active:scale-95'
+                                            ? 'bg-indigo-100 text-indigo-700 cursor-default'
+                                            : 'bg-indigo-500 hover:bg-indigo-600 text-white active:scale-95 cursor-pointer'
                                             }`}
                                     >
                                         {isActive ? 'Active' : 'Activate'}
@@ -158,10 +158,10 @@ export default function ThemeModal({
                                         onClick={() => handlePurchase(theme.id)}
                                         disabled={!isAuthenticated || !canAfford || purchasing === theme.id}
                                         className={`w-full py-2 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${!isAuthenticated || !canAfford
-                                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                : purchasing === theme.id
-                                                    ? 'bg-slate-300 text-slate-600 cursor-wait'
-                                                    : 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white active:scale-95'
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : purchasing === theme.id
+                                                ? 'bg-slate-300 text-slate-600 cursor-wait'
+                                                : 'bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white active:scale-95 cursor-pointer'
                                             }`}
                                     >
                                         {!isAuthenticated ? (

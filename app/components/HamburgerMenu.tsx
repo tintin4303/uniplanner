@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Menu, BookMarked, X } from 'lucide-react';
+import { Menu, BookMarked, X, Gem } from 'lucide-react';
 
 interface HamburgerMenuProps {
     onSavedSchedules: () => void;
+    onShowTokenModal: () => void;
 }
 
-export default function HamburgerMenu({ onSavedSchedules }: HamburgerMenuProps) {
+export default function HamburgerMenu({ onSavedSchedules, onShowTokenModal }: HamburgerMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -30,10 +31,20 @@ export default function HamburgerMenu({ onSavedSchedules }: HamburgerMenuProps) 
                                 onSavedSchedules();
                                 setIsOpen(false);
                             }}
-                            className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors cursor-pointer"
+                            className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors cursor-pointer border-b border-slate-50"
                         >
                             <BookMarked size={18} className="text-indigo-500" />
                             Saved Schedules
+                        </button>
+                        <button
+                            onClick={() => {
+                                onShowTokenModal();
+                                setIsOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors cursor-pointer"
+                        >
+                            <Gem size={18} className="text-pink-500" />
+                            Get More Tokens
                         </button>
 
                         {/* Future menu items can be added here */}

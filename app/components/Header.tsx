@@ -101,7 +101,7 @@ export default function Header({
                 {/* Right Group: Hamburger Menu */}
                 <div className="flex items-center">
                     <div className="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
-                    <HamburgerMenu onSavedSchedules={onSavedSchedules} />
+                    <HamburgerMenu onSavedSchedules={onSavedSchedules} onShowTokenModal={onShowTokenModal} />
                 </div>
             </div>
         </div>
