@@ -23,13 +23,14 @@ import ConfirmationModal, { Action } from './components/ConfirmationModal';
 // Hooks
 import { useScheduleData } from './hooks/useScheduleData';
 import { useScheduleGenerator } from './hooks/useScheduleGenerator';
+import { generateAiRoast } from './actions';
 import { useTokens } from './hooks/useTokens';
 import { useTheme } from './hooks/useTheme';
 import { useToast } from './context/ToastContext';
 
 // Types & Constants
 import { FormSection, Subject } from './lib/types';
-import { BRAND, PALETTE } from './lib/constants';
+import { PALETTE } from './lib/constants';
 
 export default function Home() {
     const { data: session, status } = useSession();
@@ -65,14 +66,15 @@ export default function Home() {
     const [activeFilter, setActiveFilter] = useState<any>(null);
     const [comparisonSubjects, setComparisonSubjects] = useState<Subject[] | null>(null);
 
-    // Token Management
-    const { tokens, setTokens, handleClaimAdReward, handleBuyTokens, handleAiSubmit } = useTokens(session, status, subjects, persistData);
-
     // Theme Management
-    const { purchasedThemes, activeTheme, activeThemeId, purchaseTheme, activateTheme, isThemePurchased } = useTheme(session, status, tokens, setTokens);
+    // Theme Management
+    const { purchasedThemes, activeTheme, activeThemeId, purchaseTheme, activateTheme, isThemePurchased } = useTheme(session, status);
+
+    // Token Management
+    const { tokens, setTokens, handleClaimAdReward, handleBuyTokens, handleAiSubmit } = useTokens(session, status, subjects, persistData, activeTheme);
 
     // Schedule Generation
-    const { generatedSchedules, groupedSubjects, calculateTotalActiveCredits, conflicts } = useScheduleGenerator(subjects, isLoaded, activeFilter);
+    const { generatedSchedules, conflicts } = useScheduleGenerator(subjects, isLoaded, activeFilter);
 
     // Handlers
     const handleLogout = async () => {
@@ -121,6 +123,139 @@ export default function Home() {
         } catch (err) {
             console.error(err);
             addToast("Failed to share schedule.", 'error');
+        }
+    };
+
+    // Roast Handler
+    const handleRoast = async (schedule: Subject[]) => {
+        if (tokens < 2) {
+            setShowTokenModal(true);
+            return;
+        }
+
+        addToast("Cooking up a roast... 🔥", 'info');
+        try {
+            const res = await generateAiRoast(schedule);
+            if (res.error) {
+                addToast(res.error, 'error');
+            } else {
+                if (typeof res.newBalance === 'number') {
+                    setTokens(res.newBalance);
+                }
+                setConfirmation({
+                    isOpen: true,
+                    title: "🔥 Schedule Roast",
+                    message: res.roast ? (
+                        <p className="text-lg italic text-slate-700 dark:text-slate-300">"{res.roast}"</p>
+                    ) : <p>Roast failed to generate.</p>,
+                    actions: [{ label: "Ouch, okay", variant: 'primary', onClick: () => setConfirmation(null) }],
+                    variant: 'info'
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            addToast("Failed to roast. AI is being nice today.", 'error');
+        }
+    };
+
+    // Vibe Check Handler
+    const handleVibeCheck = async (schedule: Subject[]) => {
+        if (tokens < 2) {
+            setShowTokenModal(true);
+            return;
+        }
+
+        addToast("Vibing with your schedule... 🔮", 'info');
+        try {
+            // Dynamically import to avoid build errors if not exported yet
+            const { generateAiVibeCheck } = await import('./actions');
+            const res = await generateAiVibeCheck(schedule);
+
+            if (res.error) {
+                if (res.error.includes("tokens")) setShowTokenModal(true);
+                else addToast(res.error, 'error');
+            } else {
+                if (typeof res.newBalance === 'number') {
+                    setTokens(res.newBalance);
+                }
+                const { persona, description, score, emoji } = res.result;
+
+                setConfirmation({
+                    isOpen: true,
+                    title: `You are: ${emoji} ${persona}`,
+                    message: (
+                        <div className="text-center space-y-4">
+                            <div className="text-6xl animate-bounce">{emoji}</div>
+                            <p className="text-lg text-slate-600 dark:text-slate-300 italic">"{description}"</p>
+                            <div className="bg-slate-100 dark:bg-slate-800 p-4 rounded-xl">
+                                <div className="text-xs uppercase font-bold text-slate-500 mb-1">Survival Probability</div>
+                                <div className="text-3xl font-black text-indigo-600 dark:text-indigo-400">{score}%</div>
+                                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full mt-2 overflow-hidden">
+                                    <div
+                                        className={`h-full ${score > 80 ? 'bg-green-500' : score > 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                        style={{ width: `${score}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        </div>
+                    ),
+                    actions: [{ label: "Cool!", variant: 'primary', onClick: () => setConfirmation(null) }],
+                    variant: 'info'
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            addToast("AI Vibe Check failed.", 'error');
+        }
+    };
+
+    // Survival Guide Handler
+    const handleSurvivalGuide = async (schedule: Subject[]) => {
+        if (tokens < 2) {
+            setShowTokenModal(true);
+            return;
+        }
+
+        addToast("Crunching survival numbers... 🛡️", 'info');
+        try {
+            const { generateAiSurvivalGuide } = await import('./actions');
+            const res = await generateAiSurvivalGuide(schedule);
+
+            if (res.error) {
+                if (res.error.includes("tokens")) setShowTokenModal(true);
+                else addToast(res.error, 'error');
+            } else {
+                if (typeof res.newBalance === 'number') {
+                    setTokens(res.newBalance);
+                }
+
+                const tips = res.result.tips || [];
+
+                setConfirmation({
+                    isOpen: true,
+                    title: "🛡️ Survival Guide",
+                    message: (
+                        <div className="text-left space-y-3">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Here is how you survive this semester:</p>
+                            <ul className="space-y-3">
+                                {tips.map((tip: string, idx: number) => (
+                                    <li key={idx} className="flex gap-3 items-start bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                                        <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-bold w-6 h-6 flex items-center justify-center rounded-full shrink-0 text-xs">
+                                            {idx + 1}
+                                        </div>
+                                        <span className="text-sm text-slate-700 dark:text-slate-200">{tip}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ),
+                    actions: [{ label: "I can do this!", variant: 'primary', onClick: () => setConfirmation(null) }],
+                    variant: 'info'
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            addToast("AI failed to generate guide.", 'error');
         }
     };
 
@@ -274,7 +409,7 @@ export default function Home() {
 
     const handleAiSubmitWrapper = async (prompt: string) => {
         setIsThinking(true);
-        const response = await handleAiSubmit(prompt);
+        const response = await handleAiSubmit(prompt, conflicts);
 
         if (response.success) {
             if (response.filter) {
@@ -408,7 +543,13 @@ export default function Home() {
                     purchasedThemes={purchasedThemes}
                     activeThemeId={activeThemeId}
                     tokens={tokens}
-                    onPurchase={purchaseTheme}
+                    onPurchase={async (id) => {
+                        const result = await purchaseTheme(id, tokens);
+                        if (result.success && result.newBalance !== undefined) {
+                            setTokens(result.newBalance);
+                        }
+                        return result;
+                    }}
                     onActivate={activateTheme}
                     isAuthenticated={status === 'authenticated'}
                 />
@@ -569,6 +710,9 @@ export default function Home() {
                             theme={activeTheme}
                             comparisonSchedule={comparisonSubjects}
                             conflicts={conflicts}
+                            onRoast={handleRoast}
+                            onVibeCheck={handleVibeCheck}
+                            onSurvivalGuide={handleSurvivalGuide}
                         />
                     </div>
                 </div>

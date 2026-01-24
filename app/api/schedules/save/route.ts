@@ -17,6 +17,13 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Name and schedule data are required' }, { status: 400 });
         }
 
+        // Rate Limit: 10 saves per minute to prevent DB spam
+        const { rateLimit } = await import('@/app/lib/ratelimit');
+        const limit = await rateLimit(`save:${session.user.email}`, 10, "60 s");
+        if (!limit.success) {
+            return NextResponse.json({ error: "Too many saves. Please wait a moment." }, { status: 429 });
+        }
+
         // Get user
         const user = await prisma.user.findUnique({
             where: { email: session.user.email }

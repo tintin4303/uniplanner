@@ -11,7 +11,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // --- TYPES ---
 export interface AiResponse {
-  action: "FILTER" | "ADD" | "REMOVE" | "UPDATE" | "UNKNOWN";
+  action: "FILTER" | "ADD" | "REMOVE" | "UPDATE" | "BATCH" | "UNKNOWN";
   data?: any;
   message?: string;
 }
@@ -194,13 +194,116 @@ export async function generateAiRoast(scheduleData: any) {
       }],
       model: "llama-3.3-70b-versatile",
     });
-    return { success: true, roast: completion.choices[0]?.message?.content };
+    return { success: true, roast: completion.choices[0]?.message?.content, newBalance: user.tokens - 2 };
   } catch (e) { return { error: "AI Failed" }; }
 }
 
+// --- AI VIBE CHECK (New) ---
+export async function generateAiVibeCheck(scheduleData: any) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return { error: "Unauthorized" };
+
+  const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
+  if (!user || user.tokens < 2) return { error: "Insufficient tokens" };
+
+  // Rate Limit: 5 vibes per minute
+  const limit = await rateLimit(`vibe:${user.id}`, 5, "60 s");
+  if (!limit.success) return { error: "Too many requests. Please wait." };
+
+  await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 2 } } });
+
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: `You are a creative analyzer of college schedules.
+          Analyze the user's schedule (JSON) and assign them a "Student Persona".
+          Return JSON ONLY:
+          {
+            "persona": "Short Creative Title (e.g. The Caffeine Zombie)",
+            "description": "2 sentence witty explanation of why based on data.",
+            "score": 85 (Survival Probability 0-100),
+            "emoji": "🧟‍♂️"
+          }`
+        },
+        { role: "user", content: JSON.stringify(scheduleData) }
+      ],
+      model: "llama-3.3-70b-versatile",
+      response_format: { type: "json_object" }
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    const result = JSON.parse(content || "{}");
+
+    return { success: true, result, newBalance: user.tokens - 2 };
+  } catch (e) {
+    // Refund on error
+    await prisma.user.update({ where: { id: user.id }, data: { tokens: { increment: 2 } } });
+    return { error: "AI Failed" };
+  }
+}
+
+// --- AI SURVIVAL GUIDE (New) ---
+export async function generateAiSurvivalGuide(scheduleData: any) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return { error: "Unauthorized" };
+
+  const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
+  if (!user || user.tokens < 2) return { error: "Insufficient tokens" };
+
+  // Rate Limit: 5 guides per minute
+  const limit = await rateLimit(`guide:${user.id}`, 5, "60 s");
+  if (!limit.success) return { error: "Too many requests. Please wait." };
+
+  await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 2 } } });
+
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: `You are a battle-hardened college senior giving "Survival Tips" based on a schedule.
+          Analyze the schedule (JSON) for:
+          - 8am classes (Pain)
+          - No lunch breaks (Starvation)
+          - Late Friday classes (Social suicide)
+          - Long gaps (Awkward waiting)
+          - Back-to-back classes across campus (Sprinting)
+
+          Return JSON ONLY:
+          {
+            "tips": [
+              "Tip 1: Witty observation + advice",
+              "Tip 2: ...",
+              "Tip 3: ...",
+              "Tip 4: ...",
+              "Tip 5: ..."
+            ]
+          }
+          Max 5 tips. Be funny but helpful.`
+        },
+        { role: "user", content: JSON.stringify(scheduleData) }
+      ],
+      model: "llama-3.3-70b-versatile",
+      response_format: { type: "json_object" }
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    const result = JSON.parse(content || "{}");
+
+    return { success: true, result, newBalance: user.tokens - 2 };
+  } catch (e) {
+    // Refund on error
+    await prisma.user.update({ where: { id: user.id }, data: { tokens: { increment: 2 } } });
+    return { error: "AI Failed" };
+  }
+}
+
+
 // --- STATE-AWARE AI ACTION (UPGRADED) ---
 
-export async function generateAiAction(userPrompt: string, currentSubjects: any[]) {
+export async function generateAiAction(userPrompt: string, currentSubjects: any[], conflicts?: any[]) {
   const session = await getServerSession(authOptions);
   if (!session || !session.user) throw new Error("Unauthorized");
 
@@ -220,8 +323,6 @@ export async function generateAiAction(userPrompt: string, currentSubjects: any[
 
   try {
     // 2. BUILD RICH CONTEXT (The "Brain" Upgrade)
-    // Instead of a flat list, we group subjects to give the AI "spatial awareness"
-    // of how many sections exist for each subject.
     const groupedContext: Record<string, any[]> = {};
 
     currentSubjects.forEach(s => {
@@ -233,141 +334,94 @@ export async function generateAiAction(userPrompt: string, currentSubjects: any[
       });
     });
 
+    const conflictContext = conflicts && conflicts.length > 0
+      ? `\n⚠️ DETECTED CONFLICTS:\n${JSON.stringify(conflicts, null, 2)}`
+      : "✅ No conflicts detected.";
+
     // 3. ENHANCED SYSTEM PROMPT
     const completion = await groq.chat.completions.create({
       messages: [
         {
           role: "system",
-          content: `You are an elite University Schedule Assistant AI with advanced natural language understanding.
-Your mission: Parse ANY natural language command into precise JSON actions to modify the user's schedule.
+          content: `You are an elite University Schedule Assistant AI.
+Your mission: Parse natural language commands into precise JSON actions.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 CURRENT SCHEDULE STATE (Grouped by Subject)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${JSON.stringify(groupedContext, null, 2)}
 
+${conflictContext}
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🧠 INTELLIGENCE RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. **CONTEXT AWARENESS** - Always check the current state before acting:
-   • "Add another Math section" → Check existing sections (Sec 1, Sec 2...) and create next number
-   • "Add Physics" → If Physics doesn't exist, create "Sec 1"
-   • "Remove Math" → Remove ALL sections of Math
-   • "Update Calculus time" → Find Calculus in state and update its classes
+1. **OBEDIENCE OVER OPINION**: You are an assistant, not a blocker.
+   - If the user says "Add class on Sunday", DO IT. Do not complain about feasibility.
+   - If the user says "Add class at 3am", DO IT.
+   - Only return "UNKNOWN" if the request is technically impossible (e.g., "Add class at 25:00" or empty prompt).
 
-2. **SMART TIME PARSING** - Understand various time formats:
-   • "1pm" or "1 pm" → "13:00"
-   • "9:30am" or "9:30 am" → "09:30"
-   • "noon" → "12:00"
-   • "midnight" → "00:00"
-   • "morning" → "09:00"
-   • "afternoon" → "14:00"
-   • "evening" → "18:00"
-   • If end time not specified, default to 3 hours later
-   • "1pm to 3pm" → start: "13:00", end: "15:00"
-   • "from 2 to 4" → start: "14:00", end: "16:00"
+2. **BATCH OPERATIONS**: If the user asks for multiple things or a complex fix (like "Fix my conflicts"), return a "BATCH" action containing a list of sub-actions.
+   Example: "Add Math and Remove Physics" -> BATCH action with one ADD and one REMOVE.
 
-3. **DAY PARSING** - Recognize all day formats:
-   • Full names: "Monday", "Tuesday", etc.
-   • Abbreviations: "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
-   • Multiple days: "Mon and Wed" → [Monday, Wednesday]
-   • "MWF" → [Monday, Wednesday, Friday]
-   • "TTh" or "TR" → [Tuesday, Thursday]
-   • "weekdays" → [Monday, Tuesday, Wednesday, Thursday, Friday]
-   • "weekends" → [Saturday, Sunday]
+3. **CONFLICT RESOLUTION**: If asked to "Fix conflicts", analyze the conflicts provided. Move one of the conflicting subjects to a different time/section (UPDATE) or remove it (REMOVE) if no other options exist.
 
-4. **CREDIT PARSING** - Understand credit variations:
-   • "3 credits", "3 credit", "3cr", "3 units" → credits: 3
-   • If not specified, default to 3 credits
+4. **CONTEXT AWARENESS**: Check existing sections.
+   - "Add another Math" -> Increment section number.
+   - "Remove Math" -> Remove ALL sections of Math.
 
-5. **SECTION INTELLIGENCE** - Smart section handling:
-   • "Add another section" → Increment highest existing section number
-   • "Add section 2" → Create specifically "Sec 2"
-   • "Add lab section" → Create "Lab" section
-   • "Add lecture" → Create "Lec" section
+5. **SMART TIME PARSING**:
+   - "1pm" -> "13:00", "noon" -> "12:00".
+   - "MWF" -> Monday, Wednesday, Friday.
+   - "Weekends" -> Saturday, Sunday.
 
-6. **UPDATE INTELLIGENCE** - Understand what to update:
-   • "Change Math to Friday" → Update classes array with new day
-   • "Move Physics to 2pm" → Update start time, keep duration
-   • "Make Calculus 4 credits" → Update credits field
-   • "Change section 1 to section A" → Update section field
+6. **NATURAL LANGUAGE MAPPING**:
+   - "Move X to Y" -> UPDATE action on X with new times.
+   - "Swap X and Y" -> BATCH action. Step 1: UPDATE X to Y's times. Step 2: UPDATE Y to X's times.
+   - "Reschedule X" -> UPDATE action with new times.
 
-7. **DELETION INTELLIGENCE** - Understand removal intent:
-   • "Remove Math" → Remove ALL Math sections
-   • "Delete Physics section 2" → Remove only section 2 of Physics
-   • "Clear my schedule" → Remove all subjects
+7. **DESCRIPTIVE FEEDBACK**:
+   - You MUST return a "message" field describing exactly what you did in human terms.
+   - Good: "I moved Math to Tuesday at 2pm."
+   - Bad: "Updated."
+   - Good: "Swapped Calculus and Physics times."
 
-8. **NATURAL LANGUAGE EXAMPLES**:
-   • "Add Calculus on Monday at 9am" → ADD with Monday 09:00-12:00
-   • "Put Biology on TTh from 1 to 3" → ADD with Tuesday/Thursday 13:00-15:00
-   • "Add another Math section on Friday afternoon" → ADD next section number, Friday 14:00-17:00
-   • "Change Chemistry to Wednesday morning" → UPDATE classes to Wednesday 09:00-12:00
-   • "Move English to 2pm" → UPDATE start time to 14:00, keep day and duration
-   • "Make Physics 4 credits" → UPDATE credits to 4
-   • "Delete History" → REMOVE all History sections
-   • "I don't want classes on Friday" → FILTER with days_off: ["Friday"]
-   • "No classes before 10am" → FILTER with start_time_after: "10:00"
+8. **IMPOSSIBLE REQUESTS**:
+   - Time > 24:00 is impossible.
+   - nonsensical requests ("Make me a sandwich").
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 REQUIRED JSON OUTPUT FORMATS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-1. **ADD** - Add a new subject or section
+1. **ADD**
+   { "action": "ADD", "data": { "name": "Math", "section": "1", "credits": 3, "classes": [{ "day": "Mon", "start": "09:00", "end": "10:00" }] } }
+
+2. **REMOVE**
+   { "action": "REMOVE", "data": { "name": "Math" } }
+
+3. **UPDATE**
+   { "action": "UPDATE", "data": { "targetName": "Math", "updates": { "classes": [{ "day": "Tue", "start": "14:00", "end": "16:00" }] } } }
+   *IMPORTANT*: Do NOT use "times" string. You MUST convert it to "classes" array structure.
+
+4. **FILTER**
+   { "action": "FILTER", "data": { "blocked_times": [{ "day": "Tue", "start": "12:00", "end": "14:00" }] } }
+
+5. **BATCH** (For multiple actions)
    {
-     "action": "ADD",
+     "action": "BATCH",
      "data": {
-       "name": "Subject Name",
-       "section": "Sec 1",
-       "credits": 3,
-       "classes": [
-         { "day": "Monday", "start": "09:00", "end": "12:00" },
-         { "day": "Wednesday", "start": "09:00", "end": "12:00" }
+       "actions": [
+         { "action": "REMOVE", "data": { "name": "Conflict Subject" } },
+         { "action": "ADD", "data": { "name": "New Subject", ... } }
        ]
-     }
+     },
+     "message": "I've removed the conflicting class and added the new one."
    }
 
-2. **REMOVE** - Remove subject(s)
-   {
-     "action": "REMOVE",
-     "data": {
-       "name": "Exact Subject Name from State"
-     }
-   }
-
-3. **UPDATE** - Modify existing subject
-   {
-     "action": "UPDATE",
-     "data": {
-       "targetName": "Exact Name from State",
-       "updates": {
-         "classes": [{ "day": "Friday", "start": "13:00", "end": "16:00" }],
-         "credits": 4,
-         "section": "Sec A"
-       }
-     }
-   }
-
-4. **FILTER** - Apply schedule constraints
-   {
-     "action": "FILTER",
-     "data": {
-       "days_off": ["Friday", "Saturday"],
-       "start_time_after": "10:00",
-       "end_time_before": "16:00"
-     }
-   }
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ CRITICAL RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• Return ONLY valid JSON. No markdown, no explanations, no code blocks.
-• Always use 24-hour time format (HH:MM)
-• Day names must be capitalized: "Monday", "Tuesday", etc.
-• Check current state before creating sections
-• Be intelligent about user intent - if they say "add another", increment section numbers
-• If time/day/credits not specified, use sensible defaults
-• For updates, only include fields that are actually changing`
+6. **UNKNOWN** (Failure/Refusal)
+   { "action": "UNKNOWN", "message": "I can't do that because..." }`
         },
         { role: "user", content: userPrompt }
       ],

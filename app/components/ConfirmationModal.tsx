@@ -61,7 +61,7 @@ export default function ConfirmationModal({
                                 key={idx}
                                 onClick={action.onClick}
                                 className={`w-full py-3 rounded-xl font-bold text-sm transition-all active:scale-95 cursor-pointer ${action.variant === 'primary'
-                                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200'
+                                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
                                     : action.variant === 'danger'
                                         ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-200 dark:shadow-none'
                                         : action.variant === 'secondary'

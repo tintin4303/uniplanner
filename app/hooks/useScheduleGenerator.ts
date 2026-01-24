@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Subject } from '@/app/lib/types';
 import { timeToMin } from '@/app/lib/utils';
+import { ClassSession } from '@/app/lib/types';
 
 export function useScheduleGenerator(subjects: Subject[], isLoaded: boolean, activeFilter: any) {
     const groupedSubjects = useMemo(() => {
@@ -22,7 +23,7 @@ export function useScheduleGenerator(subjects: Subject[], isLoaded: boolean, act
         const names = Object.keys(grouped);
         const results: Subject[][] = [];
 
-        const isOverlapping = (c1: any, c2: any) => {
+        const isOverlapping = (c1: ClassSession, c2: ClassSession) => {
             if (c1.day !== c2.day) return false;
             return Math.max(timeToMin(c1.start), timeToMin(c2.start)) < Math.min(timeToMin(c1.end), timeToMin(c2.end));
         };
@@ -168,6 +169,17 @@ export function useScheduleGenerator(subjects: Subject[], isLoaded: boolean, act
                         if (commonDays.length === 0) isValid = false;
                     }
                 }
+                if (isValid && activeFilter.blocked_times && Array.isArray(activeFilter.blocked_times)) {
+                    const hasBlockedTime = sched.some(sub =>
+                        sub.classes.some(cls =>
+                            activeFilter.blocked_times.some((block: { day: string, start: string, end: string }) =>
+                                cls.day === block.day &&
+                                Math.max(timeToMin(cls.start), timeToMin(block.start)) < Math.min(timeToMin(cls.end), timeToMin(block.end))
+                            )
+                        )
+                    );
+                    if (hasBlockedTime) isValid = false;
+                }
                 return isValid;
             });
         }
@@ -188,7 +200,7 @@ export function useScheduleGenerator(subjects: Subject[], isLoaded: boolean, act
         const names = Object.keys(grouped);
         const deadlocks: { subject1: string; subject2: string; reason: string }[] = [];
 
-        const isOverlapping = (c1: any, c2: any) => {
+        const isOverlapping = (c1: ClassSession, c2: ClassSession) => {
             if (c1.day !== c2.day) return false;
             return Math.max(timeToMin(c1.start), timeToMin(c2.start)) < Math.min(timeToMin(c1.end), timeToMin(c2.end));
         };

@@ -5,7 +5,7 @@ import { getThemeById, getDefaultTheme } from '@/app/lib/themes';
 
 const THEME_CACHE_KEY = 'uniplan-active-theme';
 
-export function useTheme(session: Session | null, status: string, tokens: number, setTokens: (tokens: number) => void) {
+export function useTheme(session: Session | null, status: string) {
     const [purchasedThemes, setPurchasedThemes] = useState<string[]>(['classic-blue']);
     const [activeThemeId, setActiveThemeId] = useState<string>('classic-blue');
     const [activeTheme, setActiveTheme] = useState<Theme>(getDefaultTheme());
@@ -44,7 +44,7 @@ export function useTheme(session: Session | null, status: string, tokens: number
         fetchUserThemes();
     }, [status]);
 
-    const purchaseTheme = async (themeId: string): Promise<{ success: boolean; error?: string }> => {
+    const purchaseTheme = async (themeId: string, currentTokens: number): Promise<{ success: boolean; error?: string; newBalance?: number }> => {
         if (status !== 'authenticated') {
             return { success: false, error: 'Please login to purchase themes' };
         }
@@ -58,7 +58,7 @@ export function useTheme(session: Session | null, status: string, tokens: number
             return { success: false, error: 'Theme already purchased' };
         }
 
-        if (tokens < theme.price) {
+        if (currentTokens < theme.price) {
             return { success: false, error: 'Insufficient tokens' };
         }
 
@@ -73,8 +73,8 @@ export function useTheme(session: Session | null, status: string, tokens: number
 
             if (res.ok && data.success) {
                 setPurchasedThemes(data.purchasedThemes);
-                setTokens(data.newBalance);
-                return { success: true };
+                // Return new balance instead of calling setTokens directly
+                return { success: true, newBalance: data.newBalance };
             } else {
                 return { success: false, error: data.error || 'Purchase failed' };
             }

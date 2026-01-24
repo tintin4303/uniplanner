@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import {
     Save, Share2, MoreHorizontal, FileText, Image as ImageIcon,
-    FileJson, Calendar, Download, Check, Loader2
+    FileJson, Calendar, Loader2, Flame, Wand2, User, Shield
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { Subject } from '@/app/lib/types';
-import { BRAND } from '@/app/lib/constants';
+
 import { generateIcsContent } from '@/app/lib/ics';
 import { useToast } from '../context/ToastContext';
 
@@ -20,6 +20,9 @@ interface ScheduleActionsProps {
     elementId: string; // DOM ID to capture for image/pdf
     onExportStart: (id: string) => void;
     onExportEnd: () => void;
+    onRoast: () => void;
+    onVibeCheck: () => void;
+    onSurvivalGuide: () => void;
 }
 
 export default function ScheduleActions({
@@ -31,9 +34,13 @@ export default function ScheduleActions({
     onShare,
     elementId,
     onExportStart,
-    onExportEnd
+    onExportEnd,
+    onRoast,
+    onVibeCheck,
+    onSurvivalGuide
 }: ScheduleActionsProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [isAiOpen, setIsAiOpen] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const { addToast } = useToast();
 
@@ -174,10 +181,65 @@ export default function ScheduleActions({
                     <Save size={16} /> Save
                 </button>
 
-                {/* Secondary: Menu Dropdown */}
+                {/* AI Actions Menu */}
                 <div className="relative">
                     <button
-                        onClick={() => setIsOpen(!isOpen)}
+                        onClick={() => { setIsOpen(false); setIsAiOpen(!isAiOpen); }}
+                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 h-9 w-9 flex items-center justify-center rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer ml-1"
+                    >
+                        <Wand2 size={20} className="text-purple-500" />
+                    </button>
+
+                    {/* AI Dropdown Content */}
+                    {isAiOpen && (
+                        <>
+                            <div className="fixed inset-0 z-30" onClick={() => setIsAiOpen(false)}></div>
+                            <div className="absolute left-1/2 -translate-x-1/2 xl:translate-x-0 xl:left-auto xl:right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-40 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top mr-1">
+                                <div className="p-1">
+                                    <div className="px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">AI Vibes</div>
+                                    <button
+                                        onClick={() => { setIsAiOpen(false); onRoast(); }}
+                                        className="w-full text-left px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
+                                    >
+                                        <span className="flex items-center gap-3">
+                                            <Flame size={16} className="text-orange-500 group-hover:scale-110 transition-transform" /> Roast My Schedule
+                                        </span>
+                                        <span className="text-[10px] bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
+                                            2 Tokens
+                                        </span>
+                                    </button>
+                                    <button
+                                        onClick={() => { setIsAiOpen(false); onVibeCheck(); }}
+                                        className="w-full text-left px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
+                                    >
+                                        <span className="flex items-center gap-3">
+                                            <User size={16} className="text-purple-500 group-hover:scale-110 transition-transform" /> Vibe Check
+                                        </span>
+                                        <span className="text-[10px] bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
+                                            2 Tokens
+                                        </span>
+                                    </button>
+                                    <button
+                                        onClick={() => { setIsAiOpen(false); onSurvivalGuide(); }}
+                                        className="w-full text-left px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center justify-between rounded-lg transition-colors cursor-pointer group"
+                                    >
+                                        <span className="flex items-center gap-3">
+                                            <Shield size={16} className="text-emerald-500 group-hover:scale-110 transition-transform" /> Survival Guide
+                                        </span>
+                                        <span className="text-[10px] bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
+                                            2 Tokens
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {/* Secondary: Menu Dropdown (Experts Only) */}
+                <div className="relative">
+                    <button
+                        onClick={() => { setIsAiOpen(false); setIsOpen(!isOpen); }}
                         disabled={isExporting}
                         className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 h-9 w-9 flex items-center justify-center rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-wait"
                     >
