@@ -19,6 +19,7 @@ import Footer from './components/Footer';
 import SaveScheduleModal from './components/SaveScheduleModal';
 import SavedSchedulesModal from './components/SavedSchedulesModal';
 import ConfirmationModal, { Action } from './components/ConfirmationModal';
+import FriendMatchModal from './components/FriendMatchModal';
 
 // Hooks
 import { useScheduleData } from './hooks/useScheduleData';
@@ -65,6 +66,32 @@ export default function Home() {
     const [isThinking, setIsThinking] = useState(false);
     const [activeFilter, setActiveFilter] = useState<any>(null);
     const [comparisonSubjects, setComparisonSubjects] = useState<Subject[] | null>(null);
+    const [showFriendMatchModal, setShowFriendMatchModal] = useState(false);
+
+    // Friend Match Handler
+    const handleCompare = async (friendId: string) => {
+        // Extract ID if full URL is pasted
+        const cleanId = friendId.split('/').pop() || friendId;
+
+        addToast("Fetching friend's schedule... 🤝", 'info');
+        try {
+            const res = await fetch(`/api/share/${cleanId}`);
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || 'Failed to fetch');
+
+            // Validate data
+            if (Array.isArray(data.data)) {
+                setComparisonSubjects(data.data);
+                addToast("Friend's schedule loaded! Look for ghost blocks.", 'success');
+            } else {
+                throw new Error("Invalid schedule data format");
+            }
+        } catch (err) {
+            console.error(err);
+            addToast("Failed to match. Check the ID and try again.", 'error');
+        }
+    };
 
     // Theme Management
     // Theme Management
@@ -713,6 +740,7 @@ export default function Home() {
                             onRoast={handleRoast}
                             onVibeCheck={handleVibeCheck}
                             onSurvivalGuide={handleSurvivalGuide}
+                            onFriendMatch={() => setShowFriendMatchModal(true)}
                         />
                     </div>
                 </div>
@@ -736,6 +764,7 @@ export default function Home() {
             />
 
             {/* Confirmation Modal */}
+            {/* Confirmation Modal */}
             {confirmation && (
                 <ConfirmationModal
                     isOpen={confirmation.isOpen}
@@ -746,6 +775,13 @@ export default function Home() {
                     variant={confirmation.variant}
                 />
             )}
+
+            {/* Friend Match Modal */}
+            <FriendMatchModal
+                isOpen={showFriendMatchModal}
+                onClose={() => setShowFriendMatchModal(false)}
+                onCompare={handleCompare}
+            />
         </main>
     );
 }

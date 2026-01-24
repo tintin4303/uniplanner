@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
     Save, Share2, MoreHorizontal, FileText, Image as ImageIcon,
-    FileJson, Calendar, Loader2, Flame, Wand2, User, Shield
+    FileJson, Calendar, Loader2, Flame, Wand2, User, Shield, UserPlus
 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
@@ -23,6 +23,7 @@ interface ScheduleActionsProps {
     onRoast: () => void;
     onVibeCheck: () => void;
     onSurvivalGuide: () => void;
+    onFriendMatch: () => void;
 }
 
 export default function ScheduleActions({
@@ -37,7 +38,8 @@ export default function ScheduleActions({
     onExportEnd,
     onRoast,
     onVibeCheck,
-    onSurvivalGuide
+    onSurvivalGuide,
+    onFriendMatch
 }: ScheduleActionsProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isAiOpen, setIsAiOpen] = useState(false);
@@ -257,6 +259,12 @@ export default function ScheduleActions({
                                         className="w-full text-left px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
                                     >
                                         <Share2 size={16} className="text-indigo-500" /> Share Schedule
+                                    </button>
+                                    <button
+                                        onClick={() => { setIsOpen(false); onFriendMatch(); }}
+                                        className="w-full text-left px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
+                                    >
+                                        <UserPlus size={16} className="text-pink-500" /> Friend Match
                                     </button>
                                 </div>
                                 <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>

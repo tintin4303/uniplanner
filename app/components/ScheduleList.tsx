@@ -27,9 +27,10 @@ interface ScheduleListProps {
     onRoast: (schedule: Subject[]) => void;
     onVibeCheck: (schedule: Subject[]) => void;
     onSurvivalGuide: (schedule: Subject[]) => void;
+    onFriendMatch?: (schedule: Subject[]) => void;
 }
 
-export default function ScheduleList({ schedules, onExportStart, onExportEnd, exportingId, onSave, theme, comparisonSchedule, conflicts, onShare, onRoast, onVibeCheck, onSurvivalGuide }: ScheduleListProps) {
+export default function ScheduleList({ schedules, onExportStart, onExportEnd, exportingId, onSave, theme, comparisonSchedule, conflicts, onShare, onRoast, onVibeCheck, onSurvivalGuide, onFriendMatch }: ScheduleListProps) {
     const calculateCredits = (schedule: Subject[]) => schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
 
     if (schedules.length === 0) {
@@ -94,6 +95,7 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                             onRoast={() => onRoast(schedule)}
                             onVibeCheck={() => onVibeCheck(schedule)}
                             onSurvivalGuide={() => onSurvivalGuide(schedule)}
+                            onFriendMatch={() => { if (onFriendMatch) onFriendMatch(schedule); }}
                         />
 
                         <ScheduleTable schedule={schedule} id={`schedule-option-${idx}`} exporting={exportingId === `schedule-option-${idx}`} theme={theme} comparisonSchedule={comparisonSchedule || undefined} />
