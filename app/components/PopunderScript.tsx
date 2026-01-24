@@ -13,13 +13,26 @@ export default function PopunderScript() {
         const oneHour = 60 * 60 * 1000;
 
         if (!lastShown || (now - parseInt(lastShown) > oneHour)) {
+            console.log("AdMonetization: Frequency cap passed. Rendering popunder.");
             setShouldRender(true);
             localStorage.setItem('popunder_last_shown', now.toString());
-            console.log("AdMonetization: Frequency cap passed. Rendering popunder.");
         } else {
-            console.log("AdMonetization: Frequency cap active. Popunder suppressed.");
+            const minutesLeft = Math.ceil((oneHour - (now - parseInt(lastShown))) / 60000);
+            console.log(`AdMonetization: Frequency cap active. Popunder suppressed. Next ad available in ${minutesLeft} mins.`);
         }
     }, []);
+
+    // Cleanup: Remove script from DOM on unmount to prevent SPA leaks (though global listeners may persist)
+    useEffect(() => {
+        if (!shouldRender) return;
+        return () => {
+            const scriptTag = document.getElementById('popunder-setup');
+            if (scriptTag) {
+                console.log("AdMonetization: Cleaning up popunder script tag.");
+                scriptTag.remove();
+            }
+        };
+    }, [shouldRender]);
 
     if (!shouldRender) return null;
 
