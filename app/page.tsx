@@ -383,7 +383,7 @@ export default function Home() {
     if (!isLoaded) return null;
 
     return (
-        <main className="min-h-screen bg-slate-50 text-slate-900 p-4 lg:p-8 font-sans">
+        <main className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 lg:p-8 font-sans transition-colors duration-300">
 
             {/* --- MODALS & OVERLAYS --- */}
             {showAdOverlay && <AdOverlay onClose={() => setShowAdOverlay(false)} onClaim={handleClaimAd} />}

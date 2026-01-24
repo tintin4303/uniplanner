@@ -9,7 +9,7 @@ export const THEMES: Theme[] = [
         price: 0,
         tier: 'free',
         colors: {
-            header: 'bg-slate-900',
+            header: 'bg-slate-900 dark:bg-slate-800',
             headerText: 'text-white',
             accent: 'text-emerald-500',
             subjectPalette: [
@@ -27,7 +27,7 @@ export const THEMES: Theme[] = [
         price: 0,
         tier: 'free',
         colors: {
-            header: 'bg-pink-900',
+            header: 'bg-pink-900 dark:bg-pink-800',
             headerText: 'text-white',
             accent: 'text-rose-300',
             subjectPalette: [
@@ -45,7 +45,7 @@ export const THEMES: Theme[] = [
         price: 0,
         tier: 'free',
         colors: {
-            header: 'bg-indigo-950',
+            header: 'bg-indigo-950 dark:bg-indigo-900',
             headerText: 'text-white',
             accent: 'text-yellow-300',
             subjectPalette: [
@@ -65,7 +65,7 @@ export const THEMES: Theme[] = [
         price: 10,
         tier: 'basic',
         colors: {
-            header: 'bg-purple-900',
+            header: 'bg-purple-900 dark:bg-purple-800',
             headerText: 'text-white',
             accent: 'text-amber-400',
             subjectPalette: [
@@ -83,7 +83,7 @@ export const THEMES: Theme[] = [
         price: 10,
         tier: 'basic',
         colors: {
-            header: 'bg-emerald-900',
+            header: 'bg-emerald-900 dark:bg-emerald-800',
             headerText: 'text-white',
             accent: 'text-yellow-400',
             subjectPalette: [
@@ -101,7 +101,7 @@ export const THEMES: Theme[] = [
         price: 10,
         tier: 'basic',
         colors: {
-            header: 'bg-orange-900',
+            header: 'bg-orange-900 dark:bg-orange-800',
             headerText: 'text-white',
             accent: 'text-cyan-400',
             subjectPalette: [
@@ -119,7 +119,7 @@ export const THEMES: Theme[] = [
         price: 10,
         tier: 'basic',
         colors: {
-            header: 'bg-blue-900',
+            header: 'bg-blue-900 dark:bg-blue-800',
             headerText: 'text-white',
             accent: 'text-rose-400',
             subjectPalette: [
@@ -137,7 +137,7 @@ export const THEMES: Theme[] = [
         price: 10,
         tier: 'basic',
         colors: {
-            header: 'bg-gradient-to-r from-red-900 to-orange-900',
+            header: 'bg-gradient-to-r from-red-900 to-orange-900 dark:from-red-800 dark:to-orange-800',
             headerText: 'text-white',
             accent: 'text-yellow-400',
             subjectPalette: [
@@ -157,7 +157,7 @@ export const THEMES: Theme[] = [
         price: 20,
         tier: 'premium',
         colors: {
-            header: 'bg-gradient-to-r from-rose-900 to-amber-900',
+            header: 'bg-gradient-to-r from-rose-900 to-amber-900 dark:from-rose-800 dark:to-amber-800',
             headerText: 'text-white',
             accent: 'text-yellow-300',
             subjectPalette: [
@@ -175,7 +175,7 @@ export const THEMES: Theme[] = [
         price: 20,
         tier: 'premium',
         colors: {
-            header: 'bg-black',
+            header: 'bg-black dark:bg-slate-900',
             headerText: 'text-white',
             accent: 'text-lime-400',
             subjectPalette: [
@@ -193,7 +193,7 @@ export const THEMES: Theme[] = [
         price: 20,
         tier: 'premium',
         colors: {
-            header: 'bg-slate-800',
+            header: 'bg-slate-800 dark:bg-slate-700',
             headerText: 'text-white',
             accent: 'text-rose-300',
             subjectPalette: [
@@ -231,7 +231,7 @@ export const THEMES: Theme[] = [
         price: 30,
         tier: 'elite',
         colors: {
-            header: 'bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900',
+            header: 'bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 dark:from-indigo-800 dark:via-purple-800 dark:to-pink-800',
             headerText: 'text-white',
             accent: 'text-cyan-300',
             subjectPalette: [
@@ -249,7 +249,7 @@ export const THEMES: Theme[] = [
         price: 30,
         tier: 'elite',
         colors: {
-            header: 'bg-black',
+            header: 'bg-black dark:bg-slate-900',
             headerText: 'text-white',
             accent: 'text-emerald-400',
             subjectPalette: [
@@ -267,7 +267,7 @@ export const THEMES: Theme[] = [
         price: 30,
         tier: 'elite',
         colors: {
-            header: 'bg-gradient-to-r from-purple-950 via-pink-900 to-blue-950',
+            header: 'bg-gradient-to-r from-purple-950 via-pink-900 to-blue-950 dark:from-purple-900 dark:via-pink-800 dark:to-blue-900',
             headerText: 'text-white',
             accent: 'text-pink-300',
             subjectPalette: [

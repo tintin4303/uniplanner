@@ -146,7 +146,7 @@ export default function ScheduleActions({
             {/* LEFT: Info & Tags */}
             <div className="flex-1 space-y-2 min-w-0">
                 <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 whitespace-nowrap">
+                    <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 whitespace-nowrap">
                         Option #{index + 1}
                         <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded-md border border-slate-200">
                             {credits} Credits
@@ -169,7 +169,7 @@ export default function ScheduleActions({
                 {/* Primary: Save */}
                 <button
                     onClick={onSave}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md shadow-indigo-200 active:scale-95 cursor-pointer"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md shadow-indigo-200 dark:shadow-none active:scale-95 cursor-pointer"
                 >
                     <Save size={16} /> Save
                 </button>
@@ -179,7 +179,7 @@ export default function ScheduleActions({
                     <button
                         onClick={() => setIsOpen(!isOpen)}
                         disabled={isExporting}
-                        className="bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 h-9 w-9 flex items-center justify-center rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 h-9 w-9 flex items-center justify-center rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-wait"
                     >
                         {isExporting ? <Loader2 size={16} className="animate-spin" /> : <MoreHorizontal size={20} />}
                     </button>
@@ -188,39 +188,39 @@ export default function ScheduleActions({
                     {isOpen && (
                         <>
                             <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)}></div>
-                            <div className="absolute left-0 xl:left-auto xl:right-0 top-full mt-2 w-48 sm:w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-40 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left xl:origin-top-right mr-1">
+                            <div className="absolute left-0 xl:left-auto xl:right-0 top-full mt-2 w-48 sm:w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-40 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left xl:origin-top-right mr-1">
                                 <div className="p-1">
                                     <button
                                         onClick={() => { setIsOpen(false); onShare(); }}
-                                        className="w-full text-left px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
+                                        className="w-full text-left px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
                                     >
                                         <Share2 size={16} className="text-indigo-500" /> Share Schedule
                                     </button>
                                 </div>
-                                <div className="h-px bg-slate-100 my-1"></div>
+                                <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
                                 <div className="p-1">
-                                    <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Export As</div>
+                                    <div className="px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Export As</div>
                                     <button
                                         onClick={() => handleExportMedia('png')}
-                                        className="w-full text-left px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
+                                        className="w-full text-left px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
                                     >
                                         <ImageIcon size={16} className="text-blue-500" /> Image (PNG)
                                     </button>
                                     <button
                                         onClick={() => handleExportMedia('pdf')}
-                                        className="w-full text-left px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
+                                        className="w-full text-left px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
                                     >
                                         <FileText size={16} className="text-red-500" /> Document (PDF)
                                     </button>
                                     <button
                                         onClick={handleCalendarExport}
-                                        className="w-full text-left px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
+                                        className="w-full text-left px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
                                     >
                                         <Calendar size={16} className="text-purple-500" /> Calendar (.ics)
                                     </button>
                                     <button
                                         onClick={handleJsonExport}
-                                        className="w-full text-left px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
+                                        className="w-full text-left px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
                                     >
                                         <FileJson size={16} className="text-emerald-500" /> Backup File
                                     </button>

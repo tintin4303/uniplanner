@@ -21,7 +21,7 @@ export default function HamburgerMenu({ onSavedSchedules, onShowTokenModal, onIm
         <div className="relative">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="h-10 w-10 flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer"
+                className="h-10 w-10 flex items-center justify-center bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer"
                 title="Menu"
             >
                 {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -65,13 +65,13 @@ export default function HamburgerMenu({ onSavedSchedules, onShowTokenModal, onIm
                             </button>
                         </div>
 
-                        <div className="border-t border-slate-100 py-2 bg-slate-50/50">
+                        <div className="border-t border-slate-100 dark:border-slate-700 py-2 bg-slate-50/50 dark:bg-slate-800/50">
                             <button
                                 onClick={() => {
                                     onShowTokenModal();
                                     setIsOpen(false);
                                 }}
-                                className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors cursor-pointer"
+                                className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
                             >
                                 <Gem size={18} className="text-pink-500" />
                                 Get More Tokens
@@ -81,7 +81,7 @@ export default function HamburgerMenu({ onSavedSchedules, onShowTokenModal, onIm
                                     onLogout();
                                     setIsOpen(false);
                                 }}
-                                className="w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors cursor-pointer"
+                                className="w-full text-left px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors cursor-pointer"
                             >
                                 <LogOut size={18} />
                                 Sign Out

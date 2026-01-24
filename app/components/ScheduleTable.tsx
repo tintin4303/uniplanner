@@ -28,7 +28,7 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
   const blockMetaClass = exporting ? 'text-[10px] font-bold leading-tight' : 'text-[5px] sm:text-[7px] lg:text-[10px] font-medium leading-none';
 
   return (
-    <div id={id} className={`${exporting ? 'bg-white' : 'bg-white shadow-xl border border-slate-200'} mb-8 flex flex-col w-full transition-all duration-300`} style={exporting ? { width: '1920px', minWidth: '1920px', margin: 0, border: 'none' } : {}}>
+    <div id={id} className={`${exporting ? 'bg-white' : 'bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800'} mb-8 flex flex-col w-full transition-all duration-300`} style={exporting ? { width: '1920px', minWidth: '1920px', margin: 0, border: 'none' } : {}}>
 
       <div className={`${activeTheme.colors.header} ${activeTheme.colors.headerText} p-4 md:p-6 flex justify-between items-center border-b border-slate-800`}>
         <div>
@@ -42,15 +42,15 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
           <div className="text-[10px] md:text-sm text-slate-400">{schedule.length} Subjects Selected</div>
         </div>
       </div>
-      <div className="w-full grid bg-slate-50 divide-x divide-slate-200 border-b border-slate-200 grid-cols-[30px_repeat(7,minmax(0,1fr))] sm:grid-cols-[50px_repeat(7,minmax(0,1fr))] lg:grid-cols-[80px_repeat(7,minmax(0,1fr))]">
-        <div className={`${timeColClass} border-b border-slate-200 text-center flex items-center justify-center`}>TIME</div>
-        {DAYS.map(day => (<div key={day} className={`${headerDayClass} border-b border-slate-200 text-center uppercase tracking-wider overflow-hidden`}><span className="lg:hidden">{day.substring(0, 3)}</span><span className="hidden lg:inline">{day}</span></div>))}
-        <div className="relative border-r border-slate-200 bg-white" style={{ height: '700px' }}>
+      <div className="w-full grid bg-slate-50 dark:bg-slate-950 divide-x divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 grid-cols-[30px_repeat(7,minmax(0,1fr))] sm:grid-cols-[50px_repeat(7,minmax(0,1fr))] lg:grid-cols-[80px_repeat(7,minmax(0,1fr))]">
+        <div className={`${timeColClass} border-b border-slate-200 dark:border-slate-800 text-center flex items-center justify-center`}>TIME</div>
+        {DAYS.map(day => (<div key={day} className={`${headerDayClass} border-b border-slate-200 dark:border-slate-800 text-center uppercase tracking-wider overflow-hidden dark:text-slate-400`}><span className="lg:hidden">{day.substring(0, 3)}</span><span className="hidden lg:inline">{day}</span></div>))}
+        <div className="relative border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900" style={{ height: '700px' }}>
           {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => (<div key={i} className="absolute w-full text-right pr-1 sm:pr-2 lg:pr-3 text-[8px] sm:text-[9px] lg:text-[10px] text-slate-400 font-medium transform -translate-y-1/2 border-t border-transparent" style={{ top: `${(i / (END_HOUR - START_HOUR)) * 100}%` }}>{String(START_HOUR + i).padStart(2, '0')}:00</div>))}
         </div>
         {DAYS.map(day => (
-          <div key={day} className="relative bg-white h-[700px] group transition-colors hover:bg-slate-50">
-            {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => (<div key={i} className="absolute w-full border-t border-slate-100" style={{ top: `${(i / (END_HOUR - START_HOUR)) * 100}%` }} />))}
+          <div key={day} className="relative bg-white dark:bg-slate-900 h-[700px] group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+            {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => (<div key={i} className="absolute w-full border-t border-slate-100 dark:border-slate-800" style={{ top: `${(i / (END_HOUR - START_HOUR)) * 100}%` }} />))}
             {scheduledSubjects.map((subject, subjectIndex) => {
               const daysClasses = subject.classes.filter(c => c.day === day);
               const themeColor = activeTheme.colors.subjectPalette[subjectIndex % activeTheme.colors.subjectPalette.length];
@@ -76,10 +76,10 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
                 const topPerc = ((startMin - (START_HOUR * 60)) / ((END_HOUR - START_HOUR) * 60)) * 100;
                 const heightPerc = ((endMin - startMin) / ((END_HOUR - START_HOUR) * 60)) * 100;
                 return (
-                  <div key={`compare-${subject.id}-${idx}`} className="absolute inset-x-0.5 sm:inset-x-1 rounded p-0.5 sm:p-1 lg:p-2 border-2 border-dashed border-slate-400 bg-white/70 z-20 flex flex-col justify-center items-center text-center overflow-hidden leading-tight hover:bg-white transition-colors pointer-events-none" style={{ top: `${topPerc}%`, height: `${heightPerc}%`, minHeight: '35px' }}>
-                    <span className={`${blockNameClass} uppercase w-full break-words text-slate-600`} style={{ wordBreak: 'break-word' }}>{subject.name}</span>
-                    <span className={`${blockMetaClass} opacity-90 text-slate-500`}>Sec {subject.section}</span>
-                    <span className={`${blockMetaClass} text-slate-400 mt-0.5 hidden sm:block`}>IMPORT</span>
+                  <div key={`compare-${subject.id}-${idx}`} className="absolute inset-x-0.5 sm:inset-x-1 rounded p-0.5 sm:p-1 lg:p-2 border-2 border-dashed border-slate-400 bg-white/70 dark:bg-black/50 z-20 flex flex-col justify-center items-center text-center overflow-hidden leading-tight hover:bg-white dark:hover:bg-slate-800 transition-colors pointer-events-none" style={{ top: `${topPerc}%`, height: `${heightPerc}%`, minHeight: '35px' }}>
+                    <span className={`${blockNameClass} uppercase w-full break-words text-slate-600 dark:text-slate-300`} style={{ wordBreak: 'break-word' }}>{subject.name}</span>
+                    <span className={`${blockMetaClass} opacity-90 text-slate-500 dark:text-slate-400`}>Sec {subject.section}</span>
+                    <span className={`${blockMetaClass} text-slate-400 dark:text-slate-500 mt-0.5 hidden sm:block`}>IMPORT</span>
                   </div>
                 );
               });
@@ -87,18 +87,18 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
           </div>
         ))}
       </div>
-      <div className="bg-white p-4 lg:p-8">
-        <h3 className="font-bold text-slate-800 text-sm mb-4 lg:mb-6 flex items-center gap-2 uppercase tracking-wider border-b pb-4"><List size={20} className={BRAND.primaryText} /> Selected Subjects Details</h3>
+      <div className="bg-white dark:bg-slate-900 p-4 lg:p-8">
+        <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm mb-4 lg:mb-6 flex items-center gap-2 uppercase tracking-wider border-b pb-4 dark:border-slate-800"><List size={20} className={BRAND.primaryText} /> Selected Subjects Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           {schedule.map((subject, subjectIndex) => {
             const themeColor = activeTheme.colors.subjectPalette[subjectIndex % activeTheme.colors.subjectPalette.length];
             return (
-              <div key={subject.id} className="border border-slate-200 rounded-xl p-3 lg:p-4 flex items-start gap-3 lg:gap-4 bg-slate-50 break-inside-avoid">
+              <div key={subject.id} className="border border-slate-200 dark:border-slate-800 rounded-xl p-3 lg:p-4 flex items-start gap-3 lg:gap-4 bg-slate-50 dark:bg-slate-800/50 break-inside-avoid">
                 <div className={`w-3 h-3 mt-1.5 rounded-full ${themeColor} flex-shrink-0`}></div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-bold text-slate-800 text-xs sm:text-sm break-words whitespace-normal leading-snug mb-2">{subject.name}</div>
-                  <div className="text-xs text-slate-500 flex flex-wrap gap-2 lg:gap-3 items-center"><span className="font-mono bg-white px-2 py-0.5 rounded border border-slate-200 whitespace-nowrap">Sec {subject.section}</span><span className={`font-bold ${activeTheme.colors.accent} whitespace-nowrap`}>{subject.credits} Credits</span></div>
-                  {subject.noTime && <div className="text-[10px] lg:text-[11px] text-orange-600 mt-2 italic flex items-center gap-1"><Clock size={12} /> No scheduled time</div>}
+                  <div className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm break-words whitespace-normal leading-snug mb-2">{subject.name}</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-2 lg:gap-3 items-center"><span className="font-mono bg-white dark:bg-slate-700 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-600 whitespace-nowrap">Sec {subject.section}</span><span className={`font-bold ${activeTheme.colors.accent} whitespace-nowrap`}>{subject.credits} Credits</span></div>
+                  {subject.noTime && <div className="text-[10px] lg:text-[11px] text-orange-600 dark:text-orange-400 mt-2 italic flex items-center gap-1"><Clock size={12} /> No scheduled time</div>}
                 </div>
               </div>
             );

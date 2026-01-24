@@ -32,26 +32,26 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
     if (schedules.length === 0) {
         if (conflicts && conflicts.length > 0) {
             return (
-                <div className="bg-white rounded-[40px] border-2 border-red-100 p-8 shadow-sm">
+                <div className="bg-white dark:bg-slate-900 rounded-[40px] border-2 border-red-100 dark:border-red-900/30 p-8 shadow-sm">
                     <div className="flex flex-col items-center justify-center text-center mb-8">
-                        <div className="bg-red-50 p-4 rounded-full mb-4">
+                        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-full mb-4">
                             <AlertCircle size={40} className="text-red-500" />
                         </div>
-                        <h3 className="text-2xl font-black text-slate-800 mb-2">Schedule Conflict Detected</h3>
-                        <p className="text-slate-500 max-w-md">We couldn't generate any valid schedules because the following subjects have overlapping times:</p>
+                        <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-2">Schedule Conflict Detected</h3>
+                        <p className="text-slate-500 dark:text-slate-400 max-w-md">We couldn't generate any valid schedules because the following subjects have overlapping times:</p>
                     </div>
 
                     <div className="grid gap-4 max-w-2xl mx-auto">
                         {conflicts.map((conflict, idx) => (
-                            <div key={idx} className="bg-red-50 border border-red-100 rounded-2xl p-4 flex items-start gap-4">
-                                <span className="bg-white text-red-600 text-xs font-bold px-2 py-1 rounded border border-red-100 mt-0.5">#{idx + 1}</span>
+                            <div key={idx} className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl p-4 flex items-start gap-4">
+                                <span className="bg-white dark:bg-slate-800 text-red-600 text-xs font-bold px-2 py-1 rounded border border-red-100 dark:border-red-900/30 mt-0.5">#{idx + 1}</span>
                                 <div>
-                                    <div className="flex items-center gap-2 font-bold text-slate-800 text-sm mb-1">
-                                        <span className="border-b-2 border-red-200">{conflict.subject1}</span>
+                                    <div className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200 text-sm mb-1">
+                                        <span className="border-b-2 border-red-200 dark:border-red-800">{conflict.subject1}</span>
                                         <span className="text-red-300 text-xs">vs</span>
-                                        <span className="border-b-2 border-red-200">{conflict.subject2}</span>
+                                        <span className="border-b-2 border-red-200 dark:border-red-800">{conflict.subject2}</span>
                                     </div>
-                                    <p className="text-xs text-red-600 font-medium bg-white/50 px-2 py-1 rounded inline-block">
+                                    <p className="text-xs text-red-600 dark:text-red-400 font-medium bg-white/50 dark:bg-black/20 px-2 py-1 rounded inline-block">
                                         {conflict.reason}
                                     </p>
                                 </div>
@@ -63,10 +63,10 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
         }
 
         return (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border-2 border-dashed border-slate-200">
-                <AlertCircle size={48} className="text-slate-300 mb-4" />
-                <h3 className="text-xl font-bold text-slate-400">No Schedules Generated</h3>
-                <p className="text-slate-400 text-sm mt-2">Try selecting subjects in the library</p>
+            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-[40px] border-2 border-dashed border-slate-200 dark:border-slate-800">
+                <AlertCircle size={48} className="text-slate-300 dark:text-slate-700 mb-4" />
+                <h3 className="text-xl font-bold text-slate-400 dark:text-slate-600">No Schedules Generated</h3>
+                <p className="text-slate-400 dark:text-slate-600 text-sm mt-2">Try selecting subjects in the library</p>
             </div>
         );
     }
