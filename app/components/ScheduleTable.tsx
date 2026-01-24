@@ -30,7 +30,7 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
   return (
     <div id={id} className={`${exporting ? 'bg-white' : 'bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800'} mb-8 flex flex-col w-full transition-all duration-300`} style={exporting ? { width: '1920px', minWidth: '1920px', margin: 0, border: 'none' } : {}}>
 
-      <div className={`${activeTheme.colors.header} ${activeTheme.colors.headerText} p-4 md:p-6 flex justify-between items-center border-b border-slate-800`}>
+      <div className={`${activeTheme.colors.header} ${activeTheme.colors.headerText} p-4 flex justify-between items-center`}>
         <div>
           <div className="font-black text-lg md:text-2xl tracking-widest flex items-center gap-3 uppercase">
             <GraduationCap size={28} className="text-white opacity-80" /> {BRAND.name}

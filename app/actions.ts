@@ -159,14 +159,14 @@ export async function rewardTokens() {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (user?.lastAdReward) {
     const diff = (new Date().getTime() - user.lastAdReward.getTime()) / 1000;
-    if (diff < 60) return { error: `Wait ${Math.ceil(60 - diff)}s` };
+    if (diff < 30) return { error: `Wait ${Math.ceil(30 - diff)}s` };
   }
 
   await prisma.user.update({
     where: { id: userId },
-    data: { tokens: { increment: 5 }, lastAdReward: new Date() }
+    data: { tokens: { increment: 50 }, lastAdReward: new Date() }
   });
-  return { success: true, newBalance: (user?.tokens || 0) + 5 };
+  return { success: true, newBalance: (user?.tokens || 0) + 50 };
 }
 
 export async function generateAiRoast(scheduleData: any) {
