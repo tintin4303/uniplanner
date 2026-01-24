@@ -83,6 +83,8 @@ export default function Home() {
 
     // Auto-Input Check
     useEffect(() => {
+        if (!isLoaded) return; // Wait for user data to load to prevent overwriting/race conditions
+
         const pending = localStorage.getItem('pendingScheduleImport');
         if (pending) {
             try {
@@ -96,7 +98,7 @@ export default function Home() {
                 console.error("Import error", e);
             }
         }
-    }, []); // Run once on mount
+    }, [isLoaded]); // Run when loading completes
 
     // Share Handler
     const handleShare = async (schedule: Subject[]) => {
