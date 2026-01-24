@@ -63,6 +63,7 @@ export default function Home() {
     // AI & Filtering
     const [isThinking, setIsThinking] = useState(false);
     const [activeFilter, setActiveFilter] = useState<any>(null);
+    const [comparisonSubjects, setComparisonSubjects] = useState<Subject[] | null>(null);
 
     // Token Management
     const { tokens, setTokens, handleClaimAdReward, handleBuyTokens, handleAiSubmit } = useTokens(session, status, subjects, persistData);
@@ -71,7 +72,7 @@ export default function Home() {
     const { purchasedThemes, activeTheme, activeThemeId, purchaseTheme, activateTheme, isThemePurchased } = useTheme(session, status, tokens, setTokens);
 
     // Schedule Generation
-    const { generatedSchedules, groupedSubjects, calculateTotalActiveCredits } = useScheduleGenerator(subjects, isLoaded, activeFilter);
+    const { generatedSchedules, groupedSubjects, calculateTotalActiveCredits, conflicts } = useScheduleGenerator(subjects, isLoaded, activeFilter);
 
     // Handlers
     const handleLogout = async () => {
@@ -111,6 +112,34 @@ export default function Home() {
         }
     };
 
+    // Helper for Merging
+    const performMerge = (newSubjects: Subject[]) => {
+        const existingIds = new Set(subjects.map(s => s.id));
+        const existingContentSignatures = new Set(subjects.map(s => `${s.name.toLowerCase()}-${s.section}`));
+
+        const subjectsToAdd = newSubjects.filter(s => {
+            const isIdDuplicate = existingIds.has(s.id);
+            const isContentDuplicate = existingContentSignatures.has(`${s.name.toLowerCase()}-${s.section}`);
+            return !isIdDuplicate && !isContentDuplicate;
+        });
+
+        if (subjectsToAdd.length === 0) {
+            addToast('No new subjects added (all imported subjects exist).', 'info');
+        } else {
+            const mergedSubjects = [...subjects, ...subjectsToAdd];
+            persistData(mergedSubjects);
+            addToast(`Merged! Added ${subjectsToAdd.length} new subject(s).`, 'success');
+        }
+        setComparisonSubjects(null);
+    };
+
+    // Helper for Replacing
+    const performReplace = (newSubjects: Subject[]) => {
+        persistData(newSubjects);
+        addToast(`Loaded! Replaced with ${newSubjects.length} subject(s).`, 'success');
+        setComparisonSubjects(null);
+    };
+
     const handleLoadSchedule = (scheduleData: Subject[]) => {
         // 1. Basic Schema Validation
         const validImportData = scheduleData.filter(s =>
@@ -133,42 +162,31 @@ export default function Home() {
         if (subjects.length > 0) {
             setConfirmation({
                 isOpen: true,
-                title: "Merge or Replace?",
-                message: `You have ${subjects.length} subject(s) in your library. Do you want to MERGE the new schedule with them, or REPLACE them entirely?`,
+                title: "Load Schedule Action",
+                message: `You have ${subjects.length} subject(s) in your library. How would you like to load this schedule?`,
                 actions: [
                     {
-                        label: "Merge with Existing",
+                        label: "Compare (Overlay)",
+                        variant: 'secondary',
+                        onClick: () => {
+                            setComparisonSubjects(validImportData);
+                            setConfirmation(null);
+                            addToast("Comparison Mode Active. Review changes on the grid.", 'info');
+                        }
+                    },
+                    {
+                        label: "Merge",
                         variant: 'primary',
                         onClick: () => {
-                            // Merge Logic: Avoid duplicates by ID AND (Name + Section)
-                            const existingIds = new Set(subjects.map(s => s.id));
-                            const existingContentSignatures = new Set(subjects.map(s => `${s.name.toLowerCase()}-${s.section}`));
-
-                            const newSubjects = validImportData.filter(s => {
-                                const isIdDuplicate = existingIds.has(s.id);
-                                const isContentDuplicate = existingContentSignatures.has(`${s.name.toLowerCase()}-${s.section}`);
-                                return !isIdDuplicate && !isContentDuplicate;
-                            });
-
-                            const duplicatesCount = validImportData.length - newSubjects.length;
-
-                            if (newSubjects.length === 0) {
-                                addToast('No new subjects added (all imported subjects exist).', 'info');
-                            } else {
-                                const mergedSubjects = [...subjects, ...newSubjects];
-                                persistData(mergedSubjects);
-                                addToast(`Merged! Added ${newSubjects.length} new subject(s).`, 'success');
-                            }
+                            performMerge(validImportData);
                             setConfirmation(null);
                         }
                     },
                     {
-                        label: "Replace All",
+                        label: "Replace",
                         variant: 'danger',
                         onClick: () => {
-                            // Replace: Clear and load saved schedule
-                            persistData(validImportData);
-                            addToast(`Loaded! Replaced with ${validImportData.length} subject(s).`, 'success');
+                            performReplace(validImportData);
                             setConfirmation(null);
                         }
                     },
@@ -181,8 +199,7 @@ export default function Home() {
             });
         } else {
             // No existing subjects, just load
-            persistData(validImportData);
-            addToast(`Loaded successfully! Added ${validImportData.length} subject(s).`, 'success');
+            performReplace(validImportData);
         }
     };
 
@@ -368,6 +385,41 @@ export default function Home() {
                 </div>
             )}
 
+            {/* --- COMPARISON CONTROLS --- */}
+            {comparisonSubjects && (
+                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-500">
+                    <div className="bg-white px-6 py-4 rounded-2xl shadow-2xl flex flex-col md:flex-row items-center gap-4 border-2 border-indigo-100">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-slate-300 animate-pulse"></div>
+                                <span className="font-black text-slate-800">Comparison Mode</span>
+                            </div>
+                            <p className="text-xs text-slate-500">Overlaying imported schedule (Ghost View)</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => performMerge(comparisonSubjects)}
+                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-md cursor-pointer"
+                            >
+                                Merge
+                            </button>
+                            <button
+                                onClick={() => performReplace(comparisonSubjects)}
+                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-bold shadow-md cursor-pointer"
+                            >
+                                Replace
+                            </button>
+                            <button
+                                onClick={() => setComparisonSubjects(null)}
+                                className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-bold cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="max-w-[1600px] mx-auto">
 
                 {/* --- HEADER --- */}
@@ -466,6 +518,8 @@ export default function Home() {
                             exportingId={exportingId}
                             onSave={handleSaveSchedule}
                             theme={activeTheme}
+                            comparisonSchedule={comparisonSubjects}
+                            conflicts={conflicts}
                         />
                     </div>
                 </div>

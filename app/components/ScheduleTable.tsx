@@ -10,17 +10,20 @@ interface ScheduleTableProps {
   id: string;
   exporting?: boolean;
   theme?: Theme;
+  comparisonSchedule?: Subject[];
 }
 
-export default function ScheduleTable({ schedule, id, exporting, theme }: ScheduleTableProps) {
+export default function ScheduleTable({ schedule, id, exporting, theme, comparisonSchedule }: ScheduleTableProps) {
   const activeTheme = theme || getDefaultTheme();
   const START_HOUR = 8;
   const END_HOUR = 20;
   const scheduledSubjects = schedule.filter(s => !s.noTime);
+  const comparisonSubjects = comparisonSchedule?.filter(s => !s.noTime) || [];
   const totalCredits = schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
 
   return (
     <div id={id} className={`${exporting ? 'bg-white' : 'bg-white shadow-xl border border-slate-200'} mb-8 flex flex-col w-full transition-all duration-300`} style={exporting ? { width: '1920px', minWidth: '1920px', margin: 0, border: 'none' } : {}}>
+
       <div className={`${activeTheme.colors.header} ${activeTheme.colors.headerText} p-4 md:p-6 flex justify-between items-center border-b border-slate-800`}>
         <div>
           <div className="font-black text-lg md:text-2xl tracking-widest flex items-center gap-3 uppercase">
@@ -55,6 +58,22 @@ export default function ScheduleTable({ schedule, id, exporting, theme }: Schedu
                     <span className="font-black text-[6px] sm:text-[8px] lg:text-[11px] uppercase w-full break-words leading-none mb-0.5" style={{ wordBreak: 'break-word' }}>{subject.name}</span>
                     <span className="text-[5px] sm:text-[7px] lg:text-[10px] opacity-90 font-medium leading-none">Sec {subject.section}</span>
                     <span className="text-[5px] sm:text-[7px] lg:text-[9px] opacity-75 mt-0.5 hidden sm:block leading-none">{cls.start} - {cls.end}</span>
+                  </div>
+                );
+              });
+            })}
+            {comparisonSubjects.map((subject, subjectIndex) => {
+              const daysClasses = subject.classes.filter(c => c.day === day);
+              return daysClasses.map((cls, idx) => {
+                const startMin = timeToMin(cls.start);
+                const endMin = timeToMin(cls.end);
+                const topPerc = ((startMin - (START_HOUR * 60)) / ((END_HOUR - START_HOUR) * 60)) * 100;
+                const heightPerc = ((endMin - startMin) / ((END_HOUR - START_HOUR) * 60)) * 100;
+                return (
+                  <div key={`compare-${subject.id}-${idx}`} className="absolute inset-x-0.5 sm:inset-x-1 rounded p-0.5 sm:p-1 lg:p-2 border-2 border-dashed border-slate-400 bg-white/70 z-20 flex flex-col justify-center items-center text-center overflow-hidden leading-tight hover:bg-white transition-colors pointer-events-none" style={{ top: `${topPerc}%`, height: `${heightPerc}%`, minHeight: '35px' }}>
+                    <span className="font-extrabold text-[6px] sm:text-[8px] lg:text-[11px] uppercase w-full break-words leading-none mb-0.5 text-slate-600" style={{ wordBreak: 'break-word' }}>{subject.name}</span>
+                    <span className="text-[5px] sm:text-[7px] lg:text-[10px] opacity-90 font-bold leading-none text-slate-500">Sec {subject.section}</span>
+                    <span className="text-[5px] sm:text-[7px] lg:text-[9px] font-bold text-slate-400 mt-0.5 hidden sm:block leading-none">IMPORT</span>
                   </div>
                 );
               });
