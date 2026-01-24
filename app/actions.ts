@@ -4,6 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
 import Groq from "groq-sdk";
+import { rateLimit } from "@/app/lib/ratelimit";
 
 const prisma = new PrismaClient();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -176,6 +177,10 @@ export async function generateAiRoast(scheduleData: any) {
   const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
   if (!user || user.tokens < 2) return { error: "Insufficient tokens" };
 
+  // Rate Limit: 5 roasts per minute
+  const limit = await rateLimit(`roast:${user.id}`, 5, "60 s");
+  if (!limit.success) return { error: "Too many requests. Please wait." };
+
   await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 2 } } });
 
   try {
@@ -206,6 +211,10 @@ export async function generateAiAction(userPrompt: string, currentSubjects: any[
   // 1. Deduct Cost
   const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
   if (!user || user.tokens < 5) return { success: false, error: "Insufficient tokens" };
+
+  // Rate Limit: 10 AI actions per minute
+  const limit = await rateLimit(`ai:${(session.user as any).id}`, 10, "60 s");
+  if (!limit.success) return { success: false, error: "Rate limit exceeded. Try again later." };
 
   await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 5 } } });
 

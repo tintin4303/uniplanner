@@ -12,6 +12,8 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^5.22.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.1",
     "groq-sdk": "^0.37.0",
     "html-to-image": "^1.11.13",
     "jspdf": "^4.0.0",
