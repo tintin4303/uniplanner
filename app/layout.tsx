@@ -86,7 +86,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>
-          <PopunderScript />
+          {/* <PopunderScript /> -- Disabled due to aggressive behavior */}
           {children}
           <SpeedInsights />
         </Providers>
