@@ -16,10 +16,10 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "CourseCraft | Smart AI Schedule Generator",
-    template: "%s | CourseCraft"
+    default: "UniPlanner | Smart Schedule Generator",
+    template: "%s | UniPlanner"
   },
-  description: "The ultimate university class scheduler. Craft your perfect semester in seconds using AI.",
+  description: "The ultimate university class scheduler. Generate your perfect semester in seconds.",
   keywords: ["CourseCraft", "university scheduler", "class planner", "schedule generator", "AI scheduler", "college timetable"],
   authors: [{ name: "CourseCraft Team" }],
   creator: "CourseCraft",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     url: "https://coursecraft-planner.vercel.app",
     title: "CourseCraft | Smart AI Schedule Generator",
     description: "Points-aware scheduling for students. Craft your perfect semester.",
-    siteName: "CourseCraft",
+    siteName: "UniPlanner",
     images: [
       {
         url: "/icon.png", // Fallback to icon for now
