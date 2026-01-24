@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, List, Clock } from 'lucide-react';
+import { GraduationCap, List, Clock, AlertTriangle, Check } from 'lucide-react';
 import { BRAND, DAYS } from '@/app/lib/constants';
 import { Subject, Theme } from '@/app/lib/types';
 import { timeToMin } from '@/app/lib/utils';
@@ -18,8 +18,24 @@ interface ScheduleTableProps {
 export default function ScheduleTable({ schedule, id, exporting, theme, comparisonSchedule }: ScheduleTableProps) {
   const activeTheme = theme || getDefaultTheme();
   const { getConflictComment } = useFriendMatch();
+  const [selectedConflictId, setSelectedConflictId] = React.useState<string | null>(null);
+  const ignoreNextClick = React.useRef(false);
+
+  React.useEffect(() => {
+    const closeTooltip = () => {
+      if (ignoreNextClick.current) {
+        ignoreNextClick.current = false;
+        return;
+      }
+      setSelectedConflictId(null);
+    };
+    document.addEventListener('click', closeTooltip);
+    return () => document.removeEventListener('click', closeTooltip);
+  }, []);
+
   const START_HOUR = 8;
   const END_HOUR = 20;
+
   const scheduledSubjects = schedule.filter(s => !s.noTime);
   const comparisonSubjects = comparisonSchedule?.filter(s => !s.noTime) || [];
   const totalCredits = schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
@@ -92,53 +108,117 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
 
                 const conflictingSession = conflict?.classes.find(c => c.day === day && !(timeToMin(c.end) <= startMin || timeToMin(c.start) >= endMin));
 
-                const isMatch = conflict && conflict.name === subject.name && conflict.section === subject.section;
+                const cleanSection = (s?: string) => (s || '').replace(/^(sec|section)\.?\s*/i, '').trim().toLowerCase();
+                const isMatch = conflict &&
+                  conflict.name.trim().toLowerCase() === subject.name.trim().toLowerCase() &&
+                  cleanSection(conflict.section) === cleanSection(subject.section);
+                const conflictId = `compare-${subject.id}-${idx}`;
 
+                // Case 1: Match -> Render Green Overlay (Interactive, No Text)
+                if (isMatch) {
+                  return (
+                    <div
+                      key={conflictId}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.nativeEvent.stopImmediatePropagation();
+                        setSelectedConflictId(selectedConflictId === conflictId ? null : conflictId);
+                      }}
+                      className={`absolute inset-x-0.5 sm:inset-x-1 rounded p-0.5 sm:p-1 lg:p-2 border-2 border-dashed border-emerald-500 dark:border-emerald-400 flex flex-col justify-center items-center transition-all group/ghost
+                        ${selectedConflictId === conflictId ? 'z-[60] bg-white dark:bg-slate-800' : 'z-20 bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800'}
+                        cursor-pointer`}
+                      style={{
+                        top: `${topPerc}%`,
+                        height: `${heightPerc}%`,
+                        minHeight: '35px',
+                        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(16, 185, 129, 0.05) 10px, rgba(16, 185, 129, 0.05) 20px)'
+                      }}
+                    >
+                      {/* Match Icon (Centered) */}
+                      <div className="text-emerald-600 dark:text-emerald-400 opacity-80">
+                        <Check size={20} strokeWidth={3} />
+                      </div>
+
+                      {/* Match Tooltip */}
+                      {selectedConflictId === conflictId && (
+                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-max max-w-[250px] z-[100]" onClick={(e) => e.stopPropagation()}>
+                          <ComparisonTooltip
+                            userSubject={conflict}
+                            friendSubject={subject}
+                            userSession={conflictingSession!}
+                            friendSession={cls}
+                            isMatch={true}
+                            comment="You're in the same class! Sit together! 👯‍♂️"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                // Case 2: Conflict -> Render Warning Strip (Interactive, No Text)
+                if (conflict) {
+                  return (
+                    <div
+                      key={conflictId}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.nativeEvent.stopImmediatePropagation();
+                        setSelectedConflictId(selectedConflictId === conflictId ? null : conflictId);
+                      }}
+                      className={`absolute inset-x-0.5 sm:inset-x-1 rounded p-0.5 sm:p-1 lg:p-2 border-2 border-dashed border-red-400 dark:border-red-500/50 flex flex-col justify-center items-center transition-all group/ghost
+                        ${selectedConflictId === conflictId ? 'z-[60] bg-white dark:bg-slate-800' : 'z-20 bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800'}
+                        cursor-pointer`}
+                      style={{
+                        top: `${topPerc}%`,
+                        height: `${heightPerc}%`,
+                        minHeight: '35px',
+                        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(239, 68, 68, 0.05) 10px, rgba(239, 68, 68, 0.05) 20px)'
+                      }}
+                    >
+                      {/* Warning Icon (Centered) */}
+                      <div className="text-red-500 opacity-80 animate-pulse">
+                        <AlertTriangle size={16} />
+                      </div>
+
+                      {/* Tooltip on Click */}
+                      {conflictingSession && selectedConflictId === conflictId && (
+                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-max max-w-[250px] z-[100]" onClick={(e) => e.stopPropagation()}>
+                          <ComparisonTooltip
+                            userSubject={conflict}
+                            friendSubject={subject}
+                            userSession={conflictingSession}
+                            friendSession={cls}
+                            isMatch={false}
+                            comment={getConflictComment(conflictingSession.start, conflictingSession.end, cls.start, cls.end)}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                // Case 3: No Overlap -> Render Ghost Block (Neutral)
                 return (
                   <div
-                    key={`compare-${subject.id}-${idx}`}
-                    className={`absolute inset-x-0.5 sm:inset-x-1 rounded p-0.5 sm:p-1 lg:p-2 border-2 border-dashed flex flex-col justify-center items-center text-center leading-tight transition-all z-20 group/ghost
-                      ${conflict
-                        ? isMatch
-                          ? 'border-emerald-500 bg-emerald-100/90 dark:bg-emerald-900/40 cursor-help hover:z-50 hover:bg-emerald-50 dark:hover:bg-emerald-900/60' // Match Styles
-                          : 'border-red-500 bg-white/90 dark:bg-red-900/30 cursor-help hover:z-50 hover:bg-white dark:hover:bg-red-900/50' // Conflict Styles
-                        : 'border-slate-400 dark:border-slate-500 bg-white/70 dark:bg-slate-700/60 pointer-events-none' // No Overlap
-                      }`}
+                    key={conflictId}
+                    className="absolute inset-x-0.5 sm:inset-x-1 rounded p-0.5 sm:p-1 lg:p-2 border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-100/50 dark:bg-slate-800/50 flex flex-col justify-center items-center text-center overflow-hidden leading-tight z-0 hover:z-20 transition-all hover:bg-white dark:hover:bg-slate-800"
                     style={{
                       top: `${topPerc}%`,
                       height: `${heightPerc}%`,
                       minHeight: '35px',
-                      ...(conflict && !isMatch ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(239, 68, 68, 0.1) 10px, rgba(239, 68, 68, 0.1) 20px)' } : {}),
-                      ...(isMatch ? { backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(16, 185, 129, 0.1) 10px, rgba(16, 185, 129, 0.1) 20px)' } : {})
                     }}
                   >
-                    {/* Tooltip on Hover (Only if conflict) */}
-                    {conflict && conflictingSession && (
-                      <div className="hidden group-hover/ghost:block absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-max max-w-[250px] z-[100]">
-                        <ComparisonTooltip
-                          userSubject={conflict}
-                          friendSubject={subject}
-                          userSession={conflictingSession}
-                          friendSession={cls}
-                          isMatch={isMatch}
-                          comment={isMatch ? "You're in the same class! Sit together! 👯‍♂️" : getConflictComment(conflictingSession.start, conflictingSession.end, cls.start, cls.end)}
-                        />
-                      </div>
-                    )}
-
-                    {/* Content Container (Overflow Hidden to keep text nice) */}
-                    <div className="w-full h-full overflow-hidden flex flex-col items-center justify-center">
-                      <span className={`${blockNameClass} uppercase w-full break-words ${conflict ? (isMatch ? 'text-emerald-700 dark:text-emerald-300 font-bold' : 'text-red-600 dark:text-red-300 font-bold') : 'text-slate-600 dark:text-slate-200'}`} style={{ wordBreak: 'break-word' }}>
+                    <div className="w-full h-full overflow-hidden flex flex-col items-center justify-center opacity-60 grayscale">
+                      <span className={`${blockNameClass} uppercase w-full break-words text-slate-500 dark:text-slate-400`} style={{ wordBreak: 'break-word' }}>
                         {subject.name}
                       </span>
-                      <span className={`${blockMetaClass} opacity-90 ${conflict ? (isMatch ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-300') : 'text-slate-500 dark:text-slate-400'}`}>
-                        Sec {subject.section}
+                      <span className={`${blockMetaClass} text-slate-400 dark:text-slate-500`}>
+                        {/^(sec|section)\.?\s*/i.test(subject.section) ? '' : 'Sec '}{subject.section}
                       </span>
-                      {conflict && (
-                        <div className={`${isMatch ? 'bg-emerald-500 dark:bg-emerald-600' : 'bg-red-500 dark:bg-red-600'} text-white text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-full mt-1 animate-pulse shadow-sm`}>
-                          {isMatch ? 'MATCH!' : 'CONFLICT'}
-                        </div>
-                      )}
+                      <span className="text-[6px] sm:text-[8px] font-medium text-slate-400 mt-0.5">
+                        FRIEND
+                      </span>
                     </div>
                   </div>
                 );
@@ -165,6 +245,6 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
           })}
         </div>
       </div>
-    </div>
+    </div >
   );
 }

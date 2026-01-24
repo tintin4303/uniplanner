@@ -21,13 +21,13 @@ export const metadata: Metadata = {
     template: "%s | UniPlanner"
   },
   description: "The ultimate university class scheduler. Generate your perfect semester in seconds.",
-  keywords: ["UniPlanner", "university scheduler", "class planner", "schedule generator", "AI scheduler", "college timetable"],
+  keywords: ["UniPlanner", "university scheduler", "class planner", "schedule generator", "AI scheduler", "college timetable", "assumption university", "abac", "university", "au spark"],
   authors: [{ name: "UniPlanner Team" }],
   creator: "UniPlanner",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.png",
-    apple: "/icon.png", // Assuming icon.png is good for apple-touch-icon for now
+    apple: "/icon.png",
   },
   openGraph: {
     type: "website",
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     siteName: "UniPlanner",
     images: [
       {
-        url: "/icon.png", // Fallback to icon for now
+        url: "/icon.png",
         width: 512,
         height: 512,
         alt: "UniPlanner Logo",

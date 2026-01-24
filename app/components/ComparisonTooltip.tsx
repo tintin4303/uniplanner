@@ -1,5 +1,6 @@
 import React from 'react';
 import { Subject, ClassSession } from '@/app/lib/types';
+import { Check } from 'lucide-react';
 
 interface ComparisonTooltipProps {
     userSubject: Subject;
@@ -14,8 +15,8 @@ export default function ComparisonTooltip({ userSubject, friendSubject, userSess
     return (
         <div className="bg-white dark:bg-slate-900 text-slate-800 dark:text-white p-3 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 pointer-events-none animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-2 border-b border-slate-100 dark:border-slate-700 pb-2">
-                <span className={`text-xs font-bold ${isMatch ? 'text-emerald-500 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'} uppercase tracking-wider`}>
-                    {isMatch ? '✨ Perfect Match' : '⚠ Conflict'}
+                <span className={`text-xs font-bold ${isMatch ? 'text-emerald-500 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'} uppercase tracking-wider flex items-center gap-1`}>
+                    {isMatch ? <><Check size={14} strokeWidth={3} /> Match</> : '⚠ Conflict'}
                 </span>
                 <span className="text-[10px] text-slate-500 dark:text-slate-400">
                     {isMatch ? 'Same Class!' : 'Class Overlap'}
