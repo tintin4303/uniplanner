@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
-import { Download, ChevronDown, FileText, Image as ImageIcon, FileJson } from 'lucide-react';
+import { Download, ChevronDown, FileText, Image as ImageIcon, FileJson, Calendar } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
+import { useToast } from '../context/ToastContext';
+import { generateIcsContent } from '../lib/ics';
 
 interface ExportProps {
-  elementId: string; // The ID of the HTML element (Table) to capture
+  elementId: string;
   fileName: string;
   isExporting: boolean;
   onExportStart: (id: string) => void;
   onExportEnd: () => void;
-  scheduleData?: any[]; // The actual schedule data for JSON export
+  scheduleData?: any[];
 }
 
-import { useToast } from '../context/ToastContext';
-
-// ... (inside component)
 export default function ExportMenu({ elementId, fileName, isExporting, onExportStart, onExportEnd, scheduleData }: ExportProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { addToast } = useToast();
@@ -23,7 +22,7 @@ export default function ExportMenu({ elementId, fileName, isExporting, onExportS
     setIsOpen(false);
     onExportStart(elementId);
 
-    // Small delay to ensure state updates (like removing shadow for print) if needed
+    // Small delay to ensure state updates (like removing shadow for print)
     setTimeout(async () => {
       const element = document.getElementById(elementId);
       if (element) {
@@ -63,7 +62,6 @@ export default function ExportMenu({ elementId, fileName, isExporting, onExportS
   const handleJsonExport = () => {
     if (!scheduleData) return;
 
-    // Create the backup object
     const backup = {
       version: '1.0',
       type: 'uniplanner-backup',
@@ -71,12 +69,10 @@ export default function ExportMenu({ elementId, fileName, isExporting, onExportS
       data: scheduleData
     };
 
-    // Serialize to JSON
     const jsonString = JSON.stringify(backup, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
 
-    // Download file
     const link = document.createElement('a');
     link.download = `${fileName}.json`;
     link.href = url;
@@ -86,6 +82,29 @@ export default function ExportMenu({ elementId, fileName, isExporting, onExportS
     URL.revokeObjectURL(url);
 
     setIsOpen(false);
+  };
+
+  const handleCalendarExport = () => {
+    if (!scheduleData) return;
+    try {
+      const icsContent = generateIcsContent(scheduleData);
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.download = `${fileName}.ics`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      setIsOpen(false);
+      addToast("Calendar file downloaded!", 'success');
+    } catch (e) {
+      console.error(e);
+      addToast("Failed to generate calendar file", 'error');
+    }
   };
 
   return (
@@ -100,18 +119,21 @@ export default function ExportMenu({ elementId, fileName, isExporting, onExportS
 
       {isOpen && (
         <>
-          {/* Backdrop to close on click outside */}
+          {/* Backdrop */}
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
 
-          <div className="absolute right-0 top-full mt-2 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <button onClick={() => handleExport('pdf')} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50 cursor-pointer">
               <FileText size={14} className="text-red-500" /> Save as PDF
             </button>
             <button onClick={() => handleExport('png')} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 cursor-pointer border-b border-slate-50">
               <ImageIcon size={14} className="text-blue-500" /> Save as PNG
             </button>
-            <button onClick={handleJsonExport} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 cursor-pointer">
+            <button onClick={handleJsonExport} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 cursor-pointer border-b border-slate-50">
               <FileJson size={14} className="text-emerald-500" /> Save as Backup File
+            </button>
+            <button onClick={handleCalendarExport} className="w-full text-left px-4 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 flex items-center gap-2 cursor-pointer">
+              <Calendar size={14} className="text-purple-500" /> Save to Calendar
             </button>
           </div>
         </>

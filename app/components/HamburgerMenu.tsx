@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Menu, BookMarked, X, Gem, Upload, LogOut } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, BookMarked, X, Gem, Upload, LogOut, Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 interface HamburgerMenuProps {
     onSavedSchedules: () => void;
@@ -11,6 +12,10 @@ interface HamburgerMenuProps {
 export default function HamburgerMenu({ onSavedSchedules, onShowTokenModal, onImportBackup, onLogout }: HamburgerMenuProps) {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isOpen, setIsOpen] = useState(false);
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => setMounted(true), []);
 
     return (
         <div className="relative">
@@ -28,24 +33,35 @@ export default function HamburgerMenu({ onSavedSchedules, onShowTokenModal, onIm
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
 
                     {/* Dropdown Menu */}
-                    <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="py-2">
                             <button
                                 onClick={() => {
                                     onSavedSchedules();
                                     setIsOpen(false);
                                 }}
-                                className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors cursor-pointer"
+                                className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
                             >
                                 <BookMarked size={18} className="text-indigo-500" />
                                 Saved Schedules
                             </button>
                             <button
                                 onClick={() => fileInputRef.current?.click()}
-                                className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition-colors cursor-pointer"
+                                className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
                             >
                                 <Upload size={18} className="text-emerald-500" />
                                 Import Backup
+                            </button>
+                            <button
+                                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                                className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
+                            >
+                                {mounted && theme === 'dark' ? (
+                                    <Moon size={18} className="text-blue-400" />
+                                ) : (
+                                    <Sun size={18} className="text-orange-400" />
+                                )}
+                                {mounted && theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                             </button>
                         </div>
 

@@ -44,40 +44,46 @@ export default function SaveScheduleModal({ isOpen, onClose, onSave }: SaveSched
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleClose}>
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+
+                {/* Header (Fixed) */}
+                <div className="flex justify-between items-center p-6 pb-2 shrink-0">
                     <h2 className="text-xl font-bold text-slate-800">Save Schedule</h2>
                     <button onClick={handleClose} disabled={saving} className="text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50">
                         <X size={24} />
                     </button>
                 </div>
 
-                <p className="text-sm text-slate-600 mb-4">
-                    Give your schedule a name so you can easily find it later.
-                </p>
+                {/* Body (Scrollable) */}
+                <div className="flex-1 overflow-y-auto px-6 py-2 custom-scrollbar">
+                    <p className="text-sm text-slate-600 mb-4">
+                        Give your schedule a name so you can easily find it later.
+                    </p>
 
-                <div className="mb-4">
-                    <label className="block text-sm font-bold text-slate-700 mb-2">
-                        Schedule Name
-                    </label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-                        placeholder="e.g. Fall 2024 Plan A"
-                        disabled={saving}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        autoFocus
-                    />
-                    {error && (
-                        <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
-                            <X size={12} /> {error}
-                        </p>
-                    )}
+                    <div className="mb-4">
+                        <label className="block text-sm font-bold text-slate-700 mb-2">
+                            Schedule Name
+                        </label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                            placeholder="e.g. Fall 2024 Plan A"
+                            disabled={saving}
+                            className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            autoFocus
+                        />
+                        {error && (
+                            <p className="text-red-500 text-xs mt-2 flex items-center gap-1">
+                                <X size={12} /> {error}
+                            </p>
+                        )}
+                    </div>
                 </div>
 
-                <div className="flex gap-3">
+                {/* Footer (Fixed) */}
+                <div className="p-6 pt-4 shrink-0 flex gap-3">
                     <button
                         onClick={handleClose}
                         disabled={saving}
