@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://coursecraft-planner.vercel.app'; // Replace with actual domain
+    const baseUrl = 'https://uniplanner-eta.vercel.app';
 
     return [
         {

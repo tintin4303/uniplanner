@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = 'https://coursecraft-planner.vercel.app'; // Replace with actual domain if known, or relative usage
+    const baseUrl = 'https://uniplanner-eta.vercel.app';
 
     return {
         rules: {

@@ -1,5 +1,5 @@
 export const BRAND = {
-  name: "CourseCraft",
+  name: "UniPlanner",
   logoColor: "text-blue-600",
   primary: "bg-blue-600",
   primaryHover: "hover:bg-blue-700",

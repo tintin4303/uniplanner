@@ -20,9 +20,9 @@ export const metadata: Metadata = {
     template: "%s | UniPlanner"
   },
   description: "The ultimate university class scheduler. Generate your perfect semester in seconds.",
-  keywords: ["CourseCraft", "university scheduler", "class planner", "schedule generator", "AI scheduler", "college timetable"],
-  authors: [{ name: "CourseCraft Team" }],
-  creator: "CourseCraft",
+  keywords: ["UniPlanner", "university scheduler", "class planner", "schedule generator", "AI scheduler", "college timetable"],
+  authors: [{ name: "UniPlanner Team" }],
+  creator: "UniPlanner",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.png",
@@ -31,36 +31,36 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://coursecraft-planner.vercel.app",
-    title: "CourseCraft | Smart AI Schedule Generator",
-    description: "Points-aware scheduling for students. Craft your perfect semester.",
+    url: "https://uniplanner-eta.vercel.app",
+    title: "UniPlanner | Smart Schedule Generator",
+    description: "Points-aware scheduling for students. Generate your perfect semester.",
     siteName: "UniPlanner",
     images: [
       {
         url: "/icon.png", // Fallback to icon for now
         width: 512,
         height: 512,
-        alt: "CourseCraft Logo",
+        alt: "UniPlanner Logo",
       },
     ],
   },
   twitter: {
     card: "summary",
-    title: "CourseCraft | Smart AI Schedule Generator",
+    title: "UniPlanner | Smart Schedule Generator",
     description: "Generate conflict-free university schedules in seconds.",
     images: ["/icon.png"],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "CourseCraft",
+    title: "UniPlanner",
   },
 };
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "CourseCraft",
+  "name": "UniPlanner",
   "applicationCategory": "ProductivityApplication",
   "operatingSystem": "Web",
   "offers": {
