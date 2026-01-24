@@ -1,61 +1,41 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Script from 'next/script';
+import { useEffect } from 'react';
 
 export default function PopunderScript() {
-    const [shouldRender, setShouldRender] = useState(false);
-
     useEffect(() => {
-        // Frequency Cap Logic: 1 Hour (3600000 ms)
+        // 1. Check Frequency Cap
         const lastShown = localStorage.getItem('popunder_last_shown');
         const now = Date.now();
         const oneHour = 60 * 60 * 1000;
 
-        if (!lastShown || (now - parseInt(lastShown) > oneHour)) {
-            console.log("AdMonetization: Frequency cap passed. Rendering popunder.");
-            setShouldRender(true);
-            localStorage.setItem('popunder_last_shown', now.toString());
-        } else {
+        if (lastShown && (now - parseInt(lastShown) < oneHour)) {
             const minutesLeft = Math.ceil((oneHour - (now - parseInt(lastShown))) / 60000);
-            console.log(`AdMonetization: Frequency cap active. Popunder suppressed. Next ad available in ${minutesLeft} mins.`);
+            console.log(`AdMonetization: Cap ACTIVE. Ad suppressed. Next ad in ${minutesLeft} mins.`);
+            return; // STOP HERE. Do not inject script.
         }
-    }, []);
 
-    // Cleanup: Remove script from DOM on unmount to prevent SPA leaks (though global listeners may persist)
-    useEffect(() => {
-        if (!shouldRender) return;
+        // 2. Inject Script Manually (Bypassing Next.js <Script> to ensure no caching/prefetching issues)
+        console.log("AdMonetization: Cap PASSED. Injecting Ad Script...");
+
+        const script = document.createElement('script');
+        script.src = 'https://pl28556211.effectivegatecpm.com/fc/25/24/fc25248fa2e42fdc7094eb2826b8d0ab.js';
+        script.async = true;
+        // script.id is not strictly needed for the ad to work, but helps us track it
+        script.id = 'popunder-manual-injection';
+
+        document.body.appendChild(script);
+
+        // 3. Update Timestamp
+        localStorage.setItem('popunder_last_shown', now.toString());
+
+        // 4. Cleanup (Optional: remove script tag on unmount, but listeners persist)
         return () => {
-            const scriptTag = document.getElementById('popunder-setup');
-            if (scriptTag) {
-                console.log("AdMonetization: Cleaning up popunder script tag.");
-                scriptTag.remove();
+            if (document.body.contains(script)) {
+                document.body.removeChild(script);
             }
         };
-    }, [shouldRender]);
+    }, []);
 
-    if (!shouldRender) return null;
-
-    return (
-        <>
-            {/* 
-              =======================================================================
-              POP-UNDER AD SCRIPT
-              =======================================================================
-              Paste your Adsterra/Monetag Popunder Script below.
-              It usually looks like: <script type='text/javascript' ...></script>
-              
-              For Next.js, we use the <Script> component. 
-              If your code provides a URL source, use: src="YOUR_URL"
-              If it provides inline code, use dangerouslySetInnerHTML.
-              =======================================================================
-            */}
-
-            <Script
-                id="popunder-setup"
-                strategy="afterInteractive"
-                src='https://pl28556211.effectivegatecpm.com/fc/25/24/fc25248fa2e42fdc7094eb2826b8d0ab.js'
-            />
-        </>
-    );
+    return null; // No UI needed
 }
