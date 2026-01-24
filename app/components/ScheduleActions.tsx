@@ -153,9 +153,9 @@ export default function ScheduleActions({
             {/* LEFT: Info & Tags */}
             <div className="flex-1 space-y-2 min-w-0">
                 <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 flex items-center gap-2 whitespace-nowrap">
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2 whitespace-nowrap">
                         Option #{index + 1}
-                        <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded-md border border-slate-200">
+                        <span className="text-xs font-bold bg-slate-900 text-white px-2 py-1 rounded-md border border-slate-800">
                             {credits} Credits
                         </span>
                     </h3>

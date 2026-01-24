@@ -35,11 +35,11 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
           <div className="font-black text-lg md:text-2xl tracking-widest flex items-center gap-3 uppercase">
             <GraduationCap size={28} className="text-white opacity-80" /> {BRAND.name}
           </div>
-          <div className="text-xs text-slate-400 mt-1">Generated Schedule</div>
+          <div className="text-xs text-white opacity-80 mt-1">Generated Schedule</div>
         </div>
         <div className="text-right">
-          <div className={`text-xl md:text-3xl font-bold ${activeTheme.colors.accent}`}>{totalCredits} <span className="text-xs md:text-lg font-normal text-slate-400">Credits</span></div>
-          <div className="text-[10px] md:text-sm text-slate-400">{schedule.length} Subjects Selected</div>
+          <div className="text-xl md:text-3xl font-bold text-white">{totalCredits} <span className="text-xs md:text-lg font-normal text-white opacity-90">Credits</span></div>
+          <div className="text-[10px] md:text-sm text-white opacity-70">{schedule.length} Subjects Selected</div>
         </div>
       </div>
       <div className="w-full grid bg-slate-50 dark:bg-slate-950 divide-x divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 grid-cols-[30px_repeat(7,minmax(0,1fr))] sm:grid-cols-[50px_repeat(7,minmax(0,1fr))] lg:grid-cols-[80px_repeat(7,minmax(0,1fr))]">

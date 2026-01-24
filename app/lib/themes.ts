@@ -277,6 +277,84 @@ export const THEMES: Theme[] = [
             ]
         },
         preview: '/themes/galaxy-dream.png'
+    },
+
+    // ========== NEW THEMES ========== 
+    // Free Tier
+    {
+        id: 'graphite-minimal',
+        name: 'Graphite Minimal',
+        description: 'Clean, professional, and monochrome',
+        price: 0,
+        tier: 'free',
+        colors: {
+            header: 'bg-slate-800 dark:bg-slate-900',
+            headerText: 'text-slate-100',
+            accent: 'text-blue-400',
+            subjectPalette: [
+                'bg-slate-500', 'bg-gray-500', 'bg-zinc-500',
+                'bg-slate-600', 'bg-gray-600', 'bg-zinc-600',
+                'bg-slate-400', 'bg-gray-400', 'bg-zinc-400', 'bg-slate-700'
+            ]
+        },
+        preview: '/themes/graphite-minimal.png'
+    },
+    // Basic Tier
+    {
+        id: 'citrus-burst',
+        name: 'Citrus Burst',
+        description: 'Fresh energy and zest',
+        price: 10,
+        tier: 'basic',
+        colors: {
+            header: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+            headerText: 'text-white',
+            accent: 'text-lime-600',
+            subjectPalette: [
+                'bg-lime-400', 'bg-yellow-400', 'bg-orange-400',
+                'bg-lime-500', 'bg-yellow-500', 'bg-orange-500',
+                'bg-green-400', 'bg-amber-400', 'bg-rose-400', 'bg-lime-300'
+            ]
+        },
+        preview: '/themes/citrus-burst.png'
+    },
+    // Premium Tier
+    {
+        id: 'vaporwave-sunset',
+        name: 'Vaporwave Sunset',
+        description: 'Retro-futuristic nostalgia',
+        price: 20,
+        tier: 'premium',
+        colors: {
+            header: 'bg-gradient-to-r from-cyan-500 to-fuchsia-500',
+            headerText: 'text-white',
+            accent: 'text-purple-200',
+            subjectPalette: [
+                'bg-cyan-400', 'bg-fuchsia-400', 'bg-violet-400',
+                'bg-pink-400', 'bg-sky-400', 'bg-purple-400',
+                'bg-cyan-300', 'bg-fuchsia-300', 'bg-violet-300', 'bg-indigo-300'
+            ]
+        },
+        preview: '/themes/vaporwave-sunset.png'
+    },
+    // Elite Tier
+    {
+        id: 'golden-hour',
+        name: 'Golden Hour',
+        description: 'Luxurious warmth and radiance',
+        price: 30,
+        tier: 'elite',
+        colors: {
+            header: 'bg-gradient-to-r from-amber-700 via-yellow-600 to-amber-800',
+            headerText: 'text-amber-50',
+            accent: 'text-yellow-200',
+            subjectPalette: [
+                'bg-amber-500', 'bg-yellow-500', 'bg-orange-500',
+                'bg-amber-600', 'bg-yellow-600', 'bg-orange-600',
+                'bg-amber-400', 'bg-yellow-400', 'bg-orange-400', 'bg-red-400'
+            ]
+        },
+        preview: '/themes/golden-hour.png'
     }
 ];
 

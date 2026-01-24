@@ -93,10 +93,10 @@ export default function SubjectLibrary({ subjects, onToggleGroup, onToggleSectio
 
       {/* SUMMARY CARD */}
       <div className={`${theme.colors.header} ${theme.colors.headerText} p-6 rounded-3xl shadow-xl mt-6`}>
-        <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><BookOpen size={18} /> Summary</h3>
-        <div className="flex justify-between items-center mb-2"><span className="opacity-70 text-sm">Active Subjects</span><span className="font-bold">{activeSubjectsCount}</span></div>
-        <div className="flex justify-between items-center mb-4"><span className="opacity-70 text-sm">Valid Schedules</span><div className="px-2 py-1 bg-white/10 rounded-lg text-xs font-bold flex items-center gap-2"><CheckCircle size={12} className={theme.colors.accent} /> {validSchedulesCount} Options</div></div>
-        <div className="flex justify-between items-center pt-2 border-t border-white/20"><span className="opacity-70 text-sm">Total Credits</span><span className={`${theme.colors.accent} font-black text-xl`}>{totalActiveCredits}</span></div>
+        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-white"><BookOpen size={18} /> Summary</h3>
+        <div className="flex justify-between items-center mb-2"><span className="text-white opacity-80 text-sm">Active Subjects</span><span className="font-bold text-white">{activeSubjectsCount}</span></div>
+        <div className="flex justify-between items-center mb-4"><span className="text-white opacity-80 text-sm">Valid Schedules</span><div className="px-2 py-1 bg-white/10 rounded-lg text-xs font-bold flex items-center gap-2 text-white"><CheckCircle size={12} className="text-white" /> {validSchedulesCount} Options</div></div>
+        <div className="flex justify-between items-center pt-2 border-t border-white/20"><span className="text-white opacity-80 text-sm">Total Credits</span><span className="text-white font-black text-xl">{totalActiveCredits}</span></div>
       </div>
     </>
   );
