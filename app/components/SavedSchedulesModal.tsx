@@ -129,11 +129,11 @@ export default function SavedSchedulesModal({ isOpen, onClose, onLoad }: SavedSc
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 border border-slate-100 dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-slate-200">
-                    <h2 className="text-2xl font-bold text-slate-800">Saved Schedules</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <div className="flex justify-between items-center p-6 border-b border-slate-200 dark:border-slate-700">
+                    <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Saved Schedules</h2>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer">
                         <X size={24} />
                     </button>
                 </div>
@@ -146,7 +146,7 @@ export default function SavedSchedulesModal({ isOpen, onClose, onLoad }: SavedSc
                             <p className="text-slate-600">Loading schedules...</p>
                         </div>
                     ) : error ? (
-                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-red-700 dark:text-red-400 text-sm">
                             {error}
                         </div>
                     ) : schedules.length === 0 ? (
@@ -158,11 +158,11 @@ export default function SavedSchedulesModal({ isOpen, onClose, onLoad }: SavedSc
                     ) : (
                         <div className="space-y-3">
                             {schedules.map((schedule) => (
-                                <div key={schedule.id} className="border border-slate-200 rounded-xl p-4 hover:shadow-md transition-shadow bg-slate-50">
+                                <div key={schedule.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-md transition-shadow bg-slate-50 dark:bg-slate-900/50">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1">
-                                            <h3 className="font-bold text-slate-800 mb-1">{schedule.name}</h3>
-                                            <p className="text-xs text-slate-500">
+                                            <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-1">{schedule.name}</h3>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">
                                                 Saved {new Date(schedule.createdAt).toLocaleDateString('en-US', {
                                                     month: 'short',
                                                     day: 'numeric',

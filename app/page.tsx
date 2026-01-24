@@ -469,7 +469,6 @@ export default function Home() {
                 <Header
                     session={session}
                     status={status}
-                    tokens={tokens}
                     saving={saving}
                     onLogin={() => signIn('google')}
                     onLogout={handleLogout}
@@ -501,8 +500,14 @@ export default function Home() {
                                 <h3 className="font-bold text-sm">Smart AI Scheduler</h3>
                                 <p className="text-xs opacity-80">"I want Fridays off..."</p>
                             </div>
-                            <div className="ml-auto bg-black/20 px-2 py-1 rounded text-[10px] font-bold">
-                                5 <Gem size={8} className="inline" />
+                            <div className="ml-auto flex flex-col items-end gap-1">
+                                <div onClick={(e) => { e.stopPropagation(); setShowTokenModal(true); }} className="bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 backdrop-blur-sm transition-colors border border-white/10">
+                                    <Gem size={12} className="text-white" />
+                                    <span>{tokens}</span>
+                                </div>
+                                <div className="text-[9px] font-medium opacity-60 px-1">
+                                    Cost: 5
+                                </div>
                             </div>
                         </div>
 

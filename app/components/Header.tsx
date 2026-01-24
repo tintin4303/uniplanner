@@ -10,7 +10,6 @@ import HamburgerMenu from './HamburgerMenu';
 interface HeaderProps {
     session: Session | null;
     status: 'loading' | 'authenticated' | 'unauthenticated';
-    tokens: number;
     saving: boolean;
     onLogin: () => void;
     onLogout: () => void;
@@ -25,7 +24,6 @@ interface HeaderProps {
 export default function Header({
     session,
     status,
-    tokens,
     saving,
     onLogin,
     onLogout,
@@ -40,8 +38,8 @@ export default function Header({
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>
                 <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 cursor-default">
-                    <div className={`${activeTheme.colors.header} p-2 pr-5 rounded-2xl shadow-lg flex items-center gap-3 transition-transform hover:scale-[1.02] border border-white/10 dark:border-slate-700`}>
-                        <div className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">
+                    <div className={`${activeTheme.colors.header} p-2 pr-5 rounded-full shadow-lg flex items-center gap-3 transition-transform hover:scale-[1.02] border border-white/10 dark:border-slate-700`}>
+                        <div className="bg-white/20 p-1.5 rounded-full backdrop-blur-sm">
                             <GraduationCap className="text-white" size={28} />
                         </div>
                         <span className="text-white drop-shadow-sm">
@@ -71,12 +69,7 @@ export default function Header({
                             )}
                             <div className="text-xs text-left">
                                 <div className="font-bold text-slate-700 dark:text-slate-200 group-hover/profile:text-slate-900 dark:group-hover/profile:text-white transition-colors">{session?.user?.name}</div>
-                                <div onClick={onShowTokenModal} className={`font-bold text-[10px] cursor-pointer hover:scale-105 transition-transform flex items-center gap-1.5 group/tokens mt-1 ${activeTheme.colors.header} ${activeTheme.colors.headerText || 'text-white'} px-2.5 py-1 rounded-full shadow-sm border border-black/5 dark:border-white/10 w-fit`}>
-                                    <Gem size={10} className={`${activeTheme.colors.accent}`} />
-                                    <span>
-                                        {tokens} Tokens
-                                    </span>
-                                </div>
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{session?.user?.email}</div>
                             </div>
                         </div>
                     ) : (

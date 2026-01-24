@@ -28,12 +28,12 @@ export default function ConfirmationModal({
 
     return (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-200 relative overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-200 relative overflow-hidden border border-slate-100 dark:border-slate-700">
 
                 {/* Close Button (Absolute, keep fixed over image/header) */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 transition-colors cursor-pointer z-10"
+                    className="absolute top-4 right-4 text-slate-300 hover:text-slate-500 dark:hover:text-slate-200 transition-colors cursor-pointer z-10"
                 >
                     <XCircle size={24} />
                 </button>
@@ -41,16 +41,16 @@ export default function ConfirmationModal({
                 {/* Scrollable Content */}
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar text-center">
                     {/* Icon */}
-                    <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${variant === 'danger' ? 'bg-red-100 text-red-500' : 'bg-blue-100 text-blue-500'
+                    <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${variant === 'danger' ? 'bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400'
                         }`}>
                         {variant === 'danger' ? <AlertTriangle size={24} /> : <Info size={24} />}
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-xl font-black text-slate-800 mb-2">{title}</h2>
+                    <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">{title}</h2>
 
                     {/* Message */}
-                    <div className="text-sm text-slate-500 mb-8 leading-relaxed">
+                    <div className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
                         {message}
                     </div>
 
@@ -63,10 +63,10 @@ export default function ConfirmationModal({
                                 className={`w-full py-3 rounded-xl font-bold text-sm transition-all active:scale-95 cursor-pointer ${action.variant === 'primary'
                                     ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200'
                                     : action.variant === 'danger'
-                                        ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-200'
+                                        ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-200 dark:shadow-none'
                                         : action.variant === 'secondary'
-                                            ? 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700'
-                                            : 'bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-600'
+                                            ? 'bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:hover:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
+                                            : 'bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500 text-slate-600 dark:text-slate-200'
                                     }`}
                             >
                                 {action.label}

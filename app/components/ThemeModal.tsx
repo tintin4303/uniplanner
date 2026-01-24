@@ -64,7 +64,7 @@ export default function ThemeModal({
 
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-300 border border-slate-100 dark:border-slate-700">
 
                 {/* Header (Fixed) */}
                 <div className="p-6 md:p-8 pb-0 shrink-0">
@@ -74,22 +74,22 @@ export default function ThemeModal({
                                 <Palette size={24} className="text-white" />
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-slate-800">Theme Gallery</h2>
-                                <p className="text-sm text-slate-500">Customize your schedule display</p>
+                                <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">Theme Gallery</h2>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Customize your schedule display</p>
                             </div>
                         </div>
-                        <button onClick={onClose} className="text-slate-300 hover:text-slate-500 transition-colors cursor-pointer">
+                        <button onClick={onClose} className="text-slate-300 hover:text-slate-500 dark:hover:text-slate-200 transition-colors cursor-pointer">
                             <XCircle size={24} />
                         </button>
                     </div>
 
                     {/* Token Balance (Fixed under header) */}
-                    <div className="bg-gradient-to-r from-pink-50 to-purple-50 border border-purple-100 rounded-xl p-4 mb-4 flex items-center justify-between">
+                    <div className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-xl p-4 mb-4 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Gem size={20} className="text-pink-500" />
-                            <span className="font-bold text-slate-700">Your Balance:</span>
+                            <span className="font-bold text-slate-700 dark:text-slate-200">Your Balance:</span>
                         </div>
-                        <span className="text-2xl font-black text-pink-600">{tokens} Tokens</span>
+                        <span className="text-2xl font-black text-pink-600 dark:text-pink-400">{tokens} Tokens</span>
                     </div>
                 </div>
 
@@ -107,8 +107,8 @@ export default function ThemeModal({
                                 <div
                                     key={theme.id}
                                     className={`border-2 rounded-2xl p-4 transition-all ${isActive
-                                        ? 'border-indigo-500 bg-indigo-50 shadow-lg'
-                                        : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-md'
+                                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 shadow-lg'
+                                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md'
                                         }`}
                                 >
                                     {/* Theme Preview */}
@@ -131,12 +131,12 @@ export default function ThemeModal({
                                     {/* Theme Info */}
                                     <div className="mb-3">
                                         <div className="flex items-center justify-between mb-1">
-                                            <h3 className="font-bold text-slate-800 text-sm">{theme.name}</h3>
+                                            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{theme.name}</h3>
                                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tierBadge.color}`}>
                                                 {tierBadge.text}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-slate-500">{theme.description}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">{theme.description}</p>
                                     </div>
 
                                     {/* Action Button */}
@@ -201,10 +201,10 @@ export default function ThemeModal({
 
                 {/* Footer (Fixed) */}
                 <div className="p-6 md:p-8 pt-4 shrink-0">
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-start gap-3">
+                    <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex items-start gap-3">
                         <Sparkles size={20} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-                        <div className="text-xs text-slate-600">
-                            <strong className="text-slate-800">Pro Tip:</strong> Themes are permanent once purchased!
+                        <div className="text-xs text-slate-600 dark:text-slate-400">
+                            <strong className="text-slate-800 dark:text-slate-200">Pro Tip:</strong> Themes are permanent once purchased!
                             {!isAuthenticated && ' Login to save your purchases across devices.'}
                         </div>
                     </div>
