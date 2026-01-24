@@ -30,7 +30,7 @@ export default function ExportMenu({ elementId, fileName, isExporting, onExportS
         try {
           const dataUrl = await toPng(element, {
             cacheBust: true,
-            pixelRatio: 2,
+            pixelRatio: 3,
             backgroundColor: '#ffffff',
             width: 1920,
             height: element.offsetHeight

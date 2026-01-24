@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, Save } from 'lucide-react';
+import { AlertCircle, Save, Share } from 'lucide-react';
 import ScheduleTable from './ScheduleTable';
 import ExportMenu from './Export';
 import { Subject, Theme } from '@/app/lib/types';
@@ -23,9 +23,10 @@ interface ScheduleListProps {
     theme?: Theme;
     comparisonSchedule?: Subject[] | null;
     conflicts?: Conflict[];
+    onShare: (schedule: Subject[]) => void;
 }
 
-export default function ScheduleList({ schedules, onExportStart, onExportEnd, exportingId, onSave, theme, comparisonSchedule, conflicts }: ScheduleListProps) {
+export default function ScheduleList({ schedules, onExportStart, onExportEnd, exportingId, onSave, theme, comparisonSchedule, conflicts, onShare }: ScheduleListProps) {
     const calculateCredits = (schedule: Subject[]) => schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
 
     if (schedules.length === 0) {
@@ -99,6 +100,12 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                                         >
                                             <Save size={14} /> Save
                                         </button>
+                                        <button
+                                            onClick={() => onShare(schedule)}
+                                            className="bg-white border border-slate-200 hover:border-indigo-600 text-slate-500 hover:text-indigo-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+                                        >
+                                            <Share size={14} /> Share
+                                        </button>
                                         <ExportMenu
                                             elementId={`schedule-option-${idx}`}
                                             fileName={`schedule-option-${idx + 1}`}
@@ -145,6 +152,12 @@ export default function ScheduleList({ schedules, onExportStart, onExportEnd, ex
                                         className="bg-white border border-slate-200 hover:border-blue-600 text-slate-500 hover:text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
                                     >
                                         <Save size={14} /> Save
+                                    </button>
+                                    <button
+                                        onClick={() => onShare(schedule)}
+                                        className="bg-white border border-slate-200 hover:border-indigo-600 text-slate-500 hover:text-indigo-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+                                    >
+                                        <Share size={14} /> Share
                                     </button>
                                     <ExportMenu
                                         elementId={`schedule-option-${idx}`}

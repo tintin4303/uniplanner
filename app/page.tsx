@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, Gem } from 'lucide-react';
 import { useSession, signIn, signOut } from "next-auth/react";
 
@@ -79,6 +79,47 @@ export default function Home() {
         await signOut({ redirect: false });
         clearData();
         setTokens(0);
+    };
+
+    // Auto-Input Check
+    useEffect(() => {
+        const pending = localStorage.getItem('pendingScheduleImport');
+        if (pending) {
+            try {
+                const { action, data } = JSON.parse(pending);
+                if (action === 'IMPORT_SHARED' && Array.isArray(data)) {
+                    localStorage.removeItem('pendingScheduleImport');
+                    handleLoadSchedule(data);
+                    addToast("Shared schedule loaded! You can now merge or replace.", 'success');
+                }
+            } catch (e) {
+                console.error("Import error", e);
+            }
+        }
+    }, []); // Run once on mount
+
+    // Share Handler
+    const handleShare = async (schedule: Subject[]) => {
+        addToast("Creating shareable link...", 'info');
+        try {
+            const res = await fetch('/api/share', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ scheduleData: schedule, name: "Shared Schedule" })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const url = `${window.location.origin}/share/${data.id}`;
+                await navigator.clipboard.writeText(url);
+                addToast("Link copied to clipboard! 🔗", 'success');
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            addToast("Failed to share schedule.", 'error');
+        }
     };
 
     // Save Schedule Handlers
@@ -517,6 +558,7 @@ export default function Home() {
                             onExportEnd={handleExportEnd}
                             exportingId={exportingId}
                             onSave={handleSaveSchedule}
+                            onShare={handleShare}
                             theme={activeTheme}
                             comparisonSchedule={comparisonSubjects}
                             conflicts={conflicts}

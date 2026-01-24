@@ -1,4 +1,5 @@
-// prisma/schema.prisma
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -9,7 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// --- NEXTAUTH MODELS ---
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -45,15 +45,14 @@ model User {
   image          String?
   accounts       Account[]
   sessions       Session[]
+  savedSchedules SavedSchedule[]
+  schedules      Schedule[] // Restored relation
   
-  // --- APP SPECIFIC FIELDS ---
+  // Custom User Fields
   tokens         Int       @default(10)
   lastAdReward   DateTime?
-  unlockedThemes String[]  @default(["default"]) // Track owned themes
-  activeTheme    String    @default("classic-blue") // Currently active theme
-  
-  schedules      Schedule[]
-  savedSchedules SavedSchedule[]
+  unlockedThemes String[]  @default(["default", "lofi"])
+  activeTheme    String    @default("default")
 }
 
 model VerificationToken {
@@ -64,25 +63,35 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// --- SCHEDULE DATA ---
+// Active/Slot Based Schedules (Restored)
 model Schedule {
   id        String   @id @default(cuid())
-  name      String   @default("My Plan 1") // "Plan A", "Plan B"
-  isActive  Boolean  @default(false)       // Tracks which slot is currently loaded
-  data      Json     // The subjects array
+  userId    String
+  name      String
+  data      Json
+  isActive  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// User's private saved schedules
 model SavedSchedule {
   id           String   @id @default(cuid())
   userId       String
   name         String
-  scheduleData Json
+  scheduleData Json     // Stores the Subject[] array
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Publicly shared schedules
+model SharedSchedule {
+  id           String   @id @default(cuid()) // URL-friendly ID
+  scheduleData Json
+  name         String?
+  createdAt    DateTime @default(now())
 }

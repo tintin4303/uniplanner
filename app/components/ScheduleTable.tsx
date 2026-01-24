@@ -21,6 +21,12 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
   const comparisonSubjects = comparisonSchedule?.filter(s => !s.noTime) || [];
   const totalCredits = schedule.reduce((sum, s) => sum + (s.credits || 0), 0);
 
+  // Dynamic Sizing for Export Readability
+  const timeColClass = exporting ? 'p-2 text-sm font-bold text-slate-500' : 'p-1 sm:p-2 lg:p-4 font-bold text-[8px] sm:text-[10px] lg:text-xs text-slate-400';
+  const headerDayClass = exporting ? 'p-2 text-sm font-bold text-slate-700' : 'p-1 sm:p-2 lg:p-4 font-bold text-[8px] sm:text-[10px] lg:text-xs text-slate-600';
+  const blockNameClass = exporting ? 'text-xs font-black leading-tight mb-1' : 'font-black text-[6px] sm:text-[8px] lg:text-[11px] leading-none mb-0.5';
+  const blockMetaClass = exporting ? 'text-[10px] font-bold leading-tight' : 'text-[5px] sm:text-[7px] lg:text-[10px] font-medium leading-none';
+
   return (
     <div id={id} className={`${exporting ? 'bg-white' : 'bg-white shadow-xl border border-slate-200'} mb-8 flex flex-col w-full transition-all duration-300`} style={exporting ? { width: '1920px', minWidth: '1920px', margin: 0, border: 'none' } : {}}>
 
@@ -37,8 +43,8 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
         </div>
       </div>
       <div className="w-full grid bg-slate-50 divide-x divide-slate-200 border-b border-slate-200 grid-cols-[30px_repeat(7,minmax(0,1fr))] sm:grid-cols-[50px_repeat(7,minmax(0,1fr))] lg:grid-cols-[80px_repeat(7,minmax(0,1fr))]">
-        <div className="p-1 sm:p-2 lg:p-4 border-b border-slate-200 font-bold text-[8px] sm:text-[10px] lg:text-xs text-slate-400 text-center flex items-center justify-center">TIME</div>
-        {DAYS.map(day => (<div key={day} className="p-1 sm:p-2 lg:p-4 border-b border-slate-200 font-bold text-[8px] sm:text-[10px] lg:text-xs text-slate-600 text-center uppercase tracking-wider overflow-hidden"><span className="lg:hidden">{day.substring(0, 3)}</span><span className="hidden lg:inline">{day}</span></div>))}
+        <div className={`${timeColClass} border-b border-slate-200 text-center flex items-center justify-center`}>TIME</div>
+        {DAYS.map(day => (<div key={day} className={`${headerDayClass} border-b border-slate-200 text-center uppercase tracking-wider overflow-hidden`}><span className="lg:hidden">{day.substring(0, 3)}</span><span className="hidden lg:inline">{day}</span></div>))}
         <div className="relative border-r border-slate-200 bg-white" style={{ height: '700px' }}>
           {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => (<div key={i} className="absolute w-full text-right pr-1 sm:pr-2 lg:pr-3 text-[8px] sm:text-[9px] lg:text-[10px] text-slate-400 font-medium transform -translate-y-1/2 border-t border-transparent" style={{ top: `${(i / (END_HOUR - START_HOUR)) * 100}%` }}>{String(START_HOUR + i).padStart(2, '0')}:00</div>))}
         </div>
@@ -55,9 +61,9 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
                 const heightPerc = ((endMin - startMin) / ((END_HOUR - START_HOUR) * 60)) * 100;
                 return (
                   <div key={`${subject.id}-${idx}`} className={`absolute inset-x-0.5 sm:inset-x-1 rounded p-0.5 sm:p-1 lg:p-2 text-white shadow-sm z-10 flex flex-col justify-center items-center text-center overflow-hidden leading-tight ${themeColor} hover:scale-[1.02] transition-transform`} style={{ top: `${topPerc}%`, height: `${heightPerc}%`, minHeight: '35px' }}>
-                    <span className="font-black text-[6px] sm:text-[8px] lg:text-[11px] uppercase w-full break-words leading-none mb-0.5" style={{ wordBreak: 'break-word' }}>{subject.name}</span>
-                    <span className="text-[5px] sm:text-[7px] lg:text-[10px] opacity-90 font-medium leading-none">Sec {subject.section}</span>
-                    <span className="text-[5px] sm:text-[7px] lg:text-[9px] opacity-75 mt-0.5 hidden sm:block leading-none">{cls.start} - {cls.end}</span>
+                    <span className={`${blockNameClass} uppercase w-full break-words`} style={{ wordBreak: 'break-word' }}>{subject.name}</span>
+                    <span className={`${blockMetaClass} opacity-90`}>Sec {subject.section}</span>
+                    <span className={`${blockMetaClass} opacity-75 mt-0.5 hidden sm:block`}>{cls.start} - {cls.end}</span>
                   </div>
                 );
               });
@@ -71,9 +77,9 @@ export default function ScheduleTable({ schedule, id, exporting, theme, comparis
                 const heightPerc = ((endMin - startMin) / ((END_HOUR - START_HOUR) * 60)) * 100;
                 return (
                   <div key={`compare-${subject.id}-${idx}`} className="absolute inset-x-0.5 sm:inset-x-1 rounded p-0.5 sm:p-1 lg:p-2 border-2 border-dashed border-slate-400 bg-white/70 z-20 flex flex-col justify-center items-center text-center overflow-hidden leading-tight hover:bg-white transition-colors pointer-events-none" style={{ top: `${topPerc}%`, height: `${heightPerc}%`, minHeight: '35px' }}>
-                    <span className="font-extrabold text-[6px] sm:text-[8px] lg:text-[11px] uppercase w-full break-words leading-none mb-0.5 text-slate-600" style={{ wordBreak: 'break-word' }}>{subject.name}</span>
-                    <span className="text-[5px] sm:text-[7px] lg:text-[10px] opacity-90 font-bold leading-none text-slate-500">Sec {subject.section}</span>
-                    <span className="text-[5px] sm:text-[7px] lg:text-[9px] font-bold text-slate-400 mt-0.5 hidden sm:block leading-none">IMPORT</span>
+                    <span className={`${blockNameClass} uppercase w-full break-words text-slate-600`} style={{ wordBreak: 'break-word' }}>{subject.name}</span>
+                    <span className={`${blockMetaClass} opacity-90 text-slate-500`}>Sec {subject.section}</span>
+                    <span className={`${blockMetaClass} text-slate-400 mt-0.5 hidden sm:block`}>IMPORT</span>
                   </div>
                 );
               });
