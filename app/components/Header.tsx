@@ -78,14 +78,14 @@ export default function Header({
                         </button>
                     )}
 
-                    {/* COFFEE BUTTON */}
-                    <button
+                    {/* COFFEE BUTTON (Hidden for now, planned for Patreon) */}
+                    {/* <button
                         onClick={onShowDonationModal}
                         className="flex-shrink-0 h-11 w-11 flex items-center justify-center bg-white dark:bg-slate-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 text-slate-400 dark:text-slate-500 hover:text-yellow-500 border border-slate-200 dark:border-slate-800 hover:border-yellow-200 rounded-full shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
                         title="Buy me a coffee"
                     >
                         <Coffee size={20} />
-                    </button>
+                    </button> */}
 
                     {/* THEME BUTTON */}
                     <button

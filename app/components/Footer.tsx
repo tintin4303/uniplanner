@@ -14,9 +14,9 @@ export default function Footer({ onShowDonationModal }: FooterProps) {
         <a href="#" className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Terms</a>
         <a href="#" className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Privacy</a>
         <span className="text-slate-300 dark:text-slate-700">|</span>
-        <button onClick={onShowDonationModal} className="inline-flex items-center gap-1 font-bold text-slate-500 dark:text-slate-400 hover:text-yellow-600 dark:hover:text-yellow-500 transition-colors cursor-pointer">
+        {/* <button onClick={onShowDonationModal} className="inline-flex items-center gap-1 font-bold text-slate-500 dark:text-slate-400 hover:text-yellow-600 dark:hover:text-yellow-500 transition-colors cursor-pointer">
           <Coffee size={14} className="text-yellow-500" /> Buy me a coffee
-        </button>
+        </button> */}
       </div>
     </footer>
   );
