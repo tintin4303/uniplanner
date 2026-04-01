@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, BookMarked, X, Gem, Upload, LogOut, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { Session } from 'next-auth';
+import Image from 'next/image';
+import { stringToColor } from '@/app/lib/utils';
 
 interface HamburgerMenuProps {
+    session?: Session | null;
+    isPro?: boolean;
+    status?: 'loading' | 'authenticated' | 'unauthenticated';
     onSavedSchedules: () => void;
     onShowTokenModal: () => void;
     onImportBackup: (file: File) => void;
     onLogout: () => void;
 }
 
-export default function HamburgerMenu({ onSavedSchedules, onShowTokenModal, onImportBackup, onLogout }: HamburgerMenuProps) {
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
+export default function HamburgerMenu({ session, isPro, status, onSavedSchedules, onShowTokenModal, onImportBackup, onLogout }: HamburgerMenuProps) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [isOpen, setIsOpen] = useState(false);
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
@@ -33,18 +39,46 @@ export default function HamburgerMenu({ onSavedSchedules, onShowTokenModal, onIm
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
 
                     {/* Dropdown Menu */}
-                    <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        {/* Profile Section */}
+                        {status === 'authenticated' && session?.user && (
+                            <div className="p-4 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col gap-3 items-center text-center border-b border-slate-100 dark:border-slate-700">
+                                {session.user.image ? (
+                                    <div className="relative w-12 h-12 shadow-sm rounded-full">
+                                        <Image src={session.user.image} alt="User" fill className="rounded-full object-cover" sizes="48px" />
+                                    </div>
+                                ) : (
+                                    <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-lg shadow-sm" style={{ backgroundColor: stringToColor(session.user.name || 'User') }}>
+                                        {(session.user.name?.[0] || 'U').toUpperCase()}
+                                    </div>
+                                )}
+                                <div>
+                                    <div className="font-bold text-slate-800 dark:text-slate-100 flex items-center justify-center gap-1.5 text-sm">
+                                        {session.user.name}
+                                        {isPro && (
+                                            <span className="bg-gradient-to-r from-emerald-400 to-teal-500 text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-sm flex items-center gap-0.5" title="Pro Subscriber">
+                                                <Gem size={8} className="fill-white" /> PRO
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{session.user.email}</div>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="py-2">
-                            <button
-                                onClick={() => {
-                                    onSavedSchedules();
-                                    setIsOpen(false);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
-                            >
-                                <BookMarked size={18} className="text-indigo-500" />
-                                Saved Schedules
-                            </button>
+                            {status === 'authenticated' && (
+                                <button
+                                    onClick={() => {
+                                        onSavedSchedules();
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
+                                >
+                                    <BookMarked size={18} className="text-indigo-500" />
+                                    Saved Schedules
+                                </button>
+                            )}
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
@@ -65,28 +99,30 @@ export default function HamburgerMenu({ onSavedSchedules, onShowTokenModal, onIm
                             </button>
                         </div>
 
-                        <div className="border-t border-slate-100 dark:border-slate-700 py-2 bg-slate-50/50 dark:bg-slate-800/50">
-                            <button
-                                onClick={() => {
-                                    onShowTokenModal();
-                                    setIsOpen(false);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
-                            >
-                                <Gem size={18} className="text-pink-500" />
-                                Get More Tokens
-                            </button>
-                            <button
-                                onClick={() => {
-                                    onLogout();
-                                    setIsOpen(false);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors cursor-pointer"
-                            >
-                                <LogOut size={18} />
-                                Sign Out
-                            </button>
-                        </div>
+                        {status === 'authenticated' && (
+                            <div className="border-t border-slate-100 dark:border-slate-700 py-2 bg-slate-50/50 dark:bg-slate-800/50">
+                                <button
+                                    onClick={() => {
+                                        onShowTokenModal();
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors cursor-pointer"
+                                >
+                                    <Gem size={18} className="text-pink-500" />
+                                    Get More Tokens
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        onLogout();
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors cursor-pointer"
+                                >
+                                    <LogOut size={18} />
+                                    Sign Out
+                                </button>
+                            </div>
+                        )}
 
                         <input
                             type="file"

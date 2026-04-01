@@ -177,14 +177,6 @@ export default function ScheduleActions({
 
             {/* RIGHT: Actions Toolbar */}
             <div className="flex items-center gap-2 flex-shrink-0 self-start xl:self-center">
-                {/* Primary: Save */}
-                <button
-                    onClick={onSave}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md shadow-indigo-200 dark:shadow-none active:scale-95 cursor-pointer"
-                >
-                    <Save size={16} /> Save
-                </button>
-
                 {/* AI Actions Menu */}
                 <div className="relative">
                     <button
@@ -256,6 +248,12 @@ export default function ScheduleActions({
                             <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)}></div>
                             <div className="absolute left-0 xl:left-auto xl:right-0 top-full mt-2 w-48 sm:w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-40 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-left xl:origin-top-right mr-1">
                                 <div className="p-1">
+                                    <button
+                                        onClick={() => { setIsOpen(false); onSave(); }}
+                                        className="w-full text-left px-3 py-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
+                                    >
+                                        <Save size={16} className="text-indigo-500" /> Save Schedule
+                                    </button>
                                     <button
                                         onClick={() => { setIsOpen(false); onShare(); }}
                                         className="w-full text-left px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 rounded-lg transition-colors cursor-pointer"
