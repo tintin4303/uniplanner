@@ -53,6 +53,10 @@ model User {
   lastAdReward   DateTime?
   unlockedThemes String[]  @default(["default", "lofi"])
   activeTheme    String    @default("default")
+  isPro          Boolean   @default(false)
+  stripeCustomerId String? @unique
+  stripeSubscriptionId String?
+  stripeCurrentPeriodEnd DateTime?
 }
 
 model VerificationToken {
