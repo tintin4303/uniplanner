@@ -98,7 +98,7 @@ export default function Home() {
     const { purchasedThemes, activeTheme, activeThemeId, purchaseTheme, activateTheme, isThemePurchased } = useTheme(session, status);
 
     // Token Management
-    const { tokens, setTokens, handleClaimAdReward, handleBuyTokens, handleAiSubmit } = useTokens(session, status, subjects, persistData, activeTheme);
+    const { tokens, setTokens, isPro, handleClaimAdReward, handleBuyTokens, handleAiSubmit } = useTokens(session, status, subjects, persistData, activeTheme);
 
     // Schedule Generation
     const { generatedSchedules, conflicts } = useScheduleGenerator(subjects, isLoaded, activeFilter);
@@ -555,6 +555,7 @@ export default function Home() {
                     onClose={() => setShowTokenModal(false)}
                     onStartAdFlow={startAdFlow}
                     onBuyTokens={handleBuyTokensWrapper}
+                    isPro={isPro}
                 />
             )}
             {showSmartGenModal && (
@@ -674,7 +675,7 @@ export default function Home() {
                                     <span>{tokens}</span>
                                 </div>
                                 <div className="text-[9px] font-medium opacity-60 px-1">
-                                    Cost: 5
+                                    {isPro ? "Unlimited" : "Cost: 5"}
                                 </div>
                             </div>
                         </div>
@@ -741,6 +742,7 @@ export default function Home() {
                             onVibeCheck={handleVibeCheck}
                             onSurvivalGuide={handleSurvivalGuide}
                             onFriendMatch={() => setShowFriendMatchModal(true)}
+                            isPro={isPro}
                         />
                     </div>
                 </div>

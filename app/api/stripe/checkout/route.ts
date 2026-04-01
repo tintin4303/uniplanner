@@ -26,33 +26,40 @@ export async function POST(req: Request) {
     let tokenAmount = 100;
     let packageName = "Starter Token Pack";
 
+    let isProAccess = false;
+    let mode: Stripe.Checkout.SessionCreateParams.Mode = "payment";
+
     if (packageId === 'pro') {
-      priceAmount = 15000; // 150.00 THB
-      tokenAmount = 500;
-      packageName = "Pro Token Pack (500)";
+      priceAmount = 9900; // 99.00 THB
+      tokenAmount = 0; // Unlimited
+      packageName = "Planner Pro (30 Days)";
+      isProAccess = true;
+      mode = "payment"; // We use prepaid to support PromptPay
     }
 
     const checkoutSession = await stripe.checkout.sessions.create({
-      payment_method_types: ["card", "promptpay"], // <--- ADDED PROMPTPAY
+      payment_method_types: ["card", "promptpay"],
       line_items: [
         {
           price_data: {
-            currency: "thb", // <--- CHANGED TO THB
+            currency: "thb",
             product_data: {
               name: packageName,
-              description: `${tokenAmount} AI Generation Tokens`,
+              description: isProAccess ? "Unlimited AI Features for 30 Days" : `${tokenAmount} AI Generation Tokens`,
             },
             unit_amount: priceAmount,
           },
           quantity: 1,
         },
       ],
-      mode: "payment",
-      success_url: `${process.env.NEXTAUTH_URL}?success=true`,
+      mode: mode,
+      success_url: `${process.env.NEXTAUTH_URL}?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXTAUTH_URL}?canceled=true`,
       metadata: {
         userId: (session.user as any).id,
-        tokensToAdd: tokenAmount.toString(), // Tell webhook how many tokens to add
+        packageId: packageId,
+        tokensToAdd: tokenAmount.toString(),
+        isProAccess: isProAccess ? "true" : "false", // Tells webhook this is a Pro purchase
       },
     });
 

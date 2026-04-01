@@ -6,13 +6,17 @@ import { PALETTE } from '@/app/lib/constants';
 
 export function useTokens(session: Session | null, status: string, subjects: Subject[], persistData: (subjects: Subject[]) => void, activeTheme?: Theme) {
     const [tokens, setTokens] = useState(0);
+    const [isPro, setIsPro] = useState(false);
 
     useEffect(() => {
         async function fetchTokens() {
             if (status === 'authenticated') {
                 try {
-                    const balance = await getUserTokens();
-                    setTokens(balance);
+                    const data = await getUserTokens();
+                    if (data && typeof data === 'object') {
+                        setTokens(data.tokens);
+                        setIsPro(data.isPro);
+                    }
                 } catch (e) {
                     console.error("Failed to fetch tokens", e);
                 }
@@ -155,6 +159,7 @@ export function useTokens(session: Session | null, status: string, subjects: Sub
     return {
         tokens,
         setTokens,
+        isPro,
         handleClaimAdReward,
         handleBuyTokens,
         handleAiSubmit,

@@ -145,9 +145,9 @@ export async function getUnlockedThemes() {
 
 export async function getUserTokens() {
   const session = await getServerSession(authOptions);
-  if (!session?.user) return 0;
-  const user = await prisma.user.findUnique({ where: { id: (session.user as any).id }, select: { tokens: true } });
-  return user?.tokens || 0;
+  if (!session?.user) return { tokens: 0, isPro: false };
+  const user = await prisma.user.findUnique({ where: { id: (session.user as any).id }, select: { tokens: true, isPro: true } });
+  return { tokens: user?.tokens || 0, isPro: user?.isPro || false };
 }
 
 export async function rewardTokens() {
@@ -175,13 +175,15 @@ export async function generateAiRoast(scheduleData: any) {
 
   // Simple roast prompt (Cost 2 tokens)
   const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
-  if (!user || user.tokens < 2) return { error: "Insufficient tokens" };
+  if (!user) return { error: "User not found" };
 
-  // Rate Limit: 5 roasts per minute
-  const limit = await rateLimit(`roast:${user.id}`, 5, "60 s");
-  if (!limit.success) return { error: "Too many requests. Please wait." };
-
-  await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 2 } } });
+  if (!user.isPro) {
+    if (user.tokens < 2) return { error: "Insufficient tokens" };
+    // Rate Limit: 5 roasts per minute
+    const limit = await rateLimit(`roast:${user.id}`, 5, "60 s");
+    if (!limit.success) return { error: "Too many requests. Please wait." };
+    await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 2 } } });
+  }
 
   try {
     const completion = await groq.chat.completions.create({
@@ -194,7 +196,7 @@ export async function generateAiRoast(scheduleData: any) {
       }],
       model: "llama-3.3-70b-versatile",
     });
-    return { success: true, roast: completion.choices[0]?.message?.content, newBalance: user.tokens - 2 };
+    return { success: true, roast: completion.choices[0]?.message?.content, newBalance: user.isPro ? user.tokens : user.tokens - 2 };
   } catch (e) { return { error: "AI Failed" }; }
 }
 
@@ -204,13 +206,15 @@ export async function generateAiVibeCheck(scheduleData: any) {
   if (!session?.user) return { error: "Unauthorized" };
 
   const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
-  if (!user || user.tokens < 2) return { error: "Insufficient tokens" };
+  if (!user) return { error: "User not found" };
 
-  // Rate Limit: 5 vibes per minute
-  const limit = await rateLimit(`vibe:${user.id}`, 5, "60 s");
-  if (!limit.success) return { error: "Too many requests. Please wait." };
-
-  await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 2 } } });
+  if (!user.isPro) {
+    if (user.tokens < 2) return { error: "Insufficient tokens" };
+    // Rate Limit: 5 vibes per minute
+    const limit = await rateLimit(`vibe:${user.id}`, 5, "60 s");
+    if (!limit.success) return { error: "Too many requests. Please wait." };
+    await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 2 } } });
+  }
 
   try {
     const completion = await groq.chat.completions.create({
@@ -236,10 +240,10 @@ export async function generateAiVibeCheck(scheduleData: any) {
     const content = completion.choices[0]?.message?.content;
     const result = JSON.parse(content || "{}");
 
-    return { success: true, result, newBalance: user.tokens - 2 };
+    return { success: true, result, newBalance: user.isPro ? user.tokens : user.tokens - 2 };
   } catch (e) {
     // Refund on error
-    await prisma.user.update({ where: { id: user.id }, data: { tokens: { increment: 2 } } });
+    if (!user.isPro) await prisma.user.update({ where: { id: user.id }, data: { tokens: { increment: 2 } } });
     return { error: "AI Failed" };
   }
 }
@@ -250,13 +254,15 @@ export async function generateAiSurvivalGuide(scheduleData: any) {
   if (!session?.user) return { error: "Unauthorized" };
 
   const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
-  if (!user || user.tokens < 2) return { error: "Insufficient tokens" };
+  if (!user) return { error: "User not found" };
 
-  // Rate Limit: 5 guides per minute
-  const limit = await rateLimit(`guide:${user.id}`, 5, "60 s");
-  if (!limit.success) return { error: "Too many requests. Please wait." };
-
-  await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 2 } } });
+  if (!user.isPro) {
+    if (user.tokens < 2) return { error: "Insufficient tokens" };
+    // Rate Limit: 5 guides per minute
+    const limit = await rateLimit(`guide:${user.id}`, 5, "60 s");
+    if (!limit.success) return { error: "Too many requests. Please wait." };
+    await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 2 } } });
+  }
 
   try {
     const completion = await groq.chat.completions.create({
@@ -292,10 +298,10 @@ export async function generateAiSurvivalGuide(scheduleData: any) {
     const content = completion.choices[0]?.message?.content;
     const result = JSON.parse(content || "{}");
 
-    return { success: true, result, newBalance: user.tokens - 2 };
+    return { success: true, result, newBalance: user.isPro ? user.tokens : user.tokens - 2 };
   } catch (e) {
     // Refund on error
-    await prisma.user.update({ where: { id: user.id }, data: { tokens: { increment: 2 } } });
+    if (!user.isPro) await prisma.user.update({ where: { id: user.id }, data: { tokens: { increment: 2 } } });
     return { error: "AI Failed" };
   }
 }
@@ -313,13 +319,15 @@ export async function generateAiAction(userPrompt: string, currentSubjects: any[
 
   // 1. Deduct Cost
   const user = await prisma.user.findUnique({ where: { id: (session.user as any).id } });
-  if (!user || user.tokens < 5) return { success: false, error: "Insufficient tokens" };
+  if (!user) return { success: false, error: "User not found" };
 
-  // Rate Limit: 10 AI actions per minute
-  const limit = await rateLimit(`ai:${(session.user as any).id}`, 10, "60 s");
-  if (!limit.success) return { success: false, error: "Rate limit exceeded. Try again later." };
-
-  await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 5 } } });
+  if (!user.isPro) {
+    if (user.tokens < 5) return { success: false, error: "Insufficient tokens" };
+    // Rate Limit: 10 AI actions per minute
+    const limit = await rateLimit(`ai:${(session.user as any).id}`, 10, "60 s");
+    if (!limit.success) return { success: false, error: "Rate limit exceeded. Try again later." };
+    await prisma.user.update({ where: { id: user.id }, data: { tokens: { decrement: 5 } } });
+  }
 
   try {
     // 2. BUILD RICH CONTEXT (The "Brain" Upgrade)
@@ -433,12 +441,12 @@ ${conflictContext}
     const content = completion.choices[0]?.message?.content;
     const result = JSON.parse(content || "{}") as AiResponse;
 
-    return { success: true, result, newBalance: user.tokens - 5 };
+    return { success: true, result, newBalance: user.isPro ? user.tokens : user.tokens - 5 };
 
   } catch (error) {
     console.error("AI Error:", error);
     // Refund tokens on error
-    await prisma.user.update({ where: { id: user.id }, data: { tokens: { increment: 5 } } });
+    if (!user.isPro) await prisma.user.update({ where: { id: user.id }, data: { tokens: { increment: 5 } } });
     return { success: false, error: "AI Service Failed" };
   }
 }

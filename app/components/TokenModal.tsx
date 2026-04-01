@@ -5,9 +5,10 @@ interface TokenModalProps {
     onClose: () => void;
     onStartAdFlow: () => void;
     onBuyTokens: (packageId: 'starter' | 'pro') => void;
+    isPro?: boolean;
 }
 
-export default function TokenModal({ onClose, onStartAdFlow, onBuyTokens }: TokenModalProps) {
+export default function TokenModal({ onClose, onStartAdFlow, onBuyTokens, isPro = false }: TokenModalProps) {
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-300 border border-slate-100 dark:border-slate-700">
@@ -41,12 +42,18 @@ export default function TokenModal({ onClose, onStartAdFlow, onBuyTokens }: Toke
                                 <p className="text-xs text-slate-400 mb-3">100 Tokens</p>
                                 <button onClick={() => onBuyTokens('starter')} className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 w-full py-2 rounded-xl font-bold text-xs transition-colors cursor-pointer">Buy</button>
                             </div>
-                            <div className="border-2 border-indigo-500 bg-white dark:bg-slate-800 p-4 rounded-2xl text-center relative shadow-xl transform scale-105 transition-transform hover:scale-110">
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-pink-500 to-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-sm">BEST VALUE</div>
-                                <h3 className="font-bold text-indigo-900 dark:text-white text-sm mt-1">Pro Pack</h3>
-                                <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 my-1">฿150</div>
-                                <p className="text-xs text-indigo-400 mb-3 font-bold">500 Tokens</p>
-                                <button onClick={() => onBuyTokens('pro')} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full py-2 rounded-xl font-bold text-xs shadow-lg animate-pulse transition-all active:scale-95 cursor-pointer">Buy Now</button>
+                            <div className={`border-2 ${isPro ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-indigo-500 bg-white dark:bg-slate-800'} p-4 rounded-2xl text-center relative shadow-xl transform scale-105 transition-transform ${isPro ? 'opacity-80' : 'hover:scale-110'}`}>
+                                <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-sm ${isPro ? 'bg-emerald-500' : 'bg-gradient-to-r from-pink-500 to-indigo-500'}`}>{isPro ? 'ACTIVE' : 'BEST VALUE'}</div>
+                                <h3 className={`font-bold text-sm mt-1 ${isPro ? 'text-emerald-900 dark:text-emerald-300' : 'text-indigo-900 dark:text-white'}`}>Unlimited Access</h3>
+                                <div className={`text-2xl font-black my-1 ${isPro ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>฿99 / 30 days</div>
+                                <p className={`text-xs mb-3 font-bold ${isPro ? 'text-emerald-500' : 'text-indigo-400'}`}>All AI Features</p>
+                                <button 
+                                    onClick={() => !isPro && onBuyTokens('pro')} 
+                                    disabled={isPro}
+                                    className={`${isPro ? 'bg-emerald-200 text-emerald-800 cursor-not-allowed dark:bg-emerald-900/50 dark:text-emerald-400' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg animate-pulse cursor-pointer'} w-full py-2 rounded-xl font-bold text-xs transition-all active:scale-95`}
+                                >
+                                    {isPro ? 'Current Plan (Active)' : 'Subscribe Now'}
+                                </button>
                             </div>
                         </div>
                         <div className="text-center shrink-0">

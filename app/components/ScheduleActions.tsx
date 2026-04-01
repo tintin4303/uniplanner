@@ -24,6 +24,7 @@ interface ScheduleActionsProps {
     onVibeCheck: () => void;
     onSurvivalGuide: () => void;
     onFriendMatch: () => void;
+    isPro?: boolean;
 }
 
 export default function ScheduleActions({
@@ -39,7 +40,8 @@ export default function ScheduleActions({
     onRoast,
     onVibeCheck,
     onSurvivalGuide,
-    onFriendMatch
+    onFriendMatch,
+    isPro = false
 }: ScheduleActionsProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isAiOpen, setIsAiOpen] = useState(false);
@@ -206,8 +208,8 @@ export default function ScheduleActions({
                                         <span className="flex items-center gap-3">
                                             <Flame size={16} className="text-orange-500 group-hover:scale-110 transition-transform" /> Roast My Schedule
                                         </span>
-                                        <span className="text-[10px] bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
-                                            2 Tokens
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium whitespace-nowrap ${isPro ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-400'}`}>
+                                            {isPro ? 'Unlimited' : '2 Tokens'}
                                         </span>
                                     </button>
                                     <button
@@ -217,8 +219,8 @@ export default function ScheduleActions({
                                         <span className="flex items-center gap-3">
                                             <User size={16} className="text-purple-500 group-hover:scale-110 transition-transform" /> Vibe Check
                                         </span>
-                                        <span className="text-[10px] bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
-                                            2 Tokens
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium whitespace-nowrap ${isPro ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-400'}`}>
+                                            {isPro ? 'Unlimited' : '2 Tokens'}
                                         </span>
                                     </button>
                                     <button
@@ -228,8 +230,8 @@ export default function ScheduleActions({
                                         <span className="flex items-center gap-3">
                                             <Shield size={16} className="text-emerald-500 group-hover:scale-110 transition-transform" /> Survival Guide
                                         </span>
-                                        <span className="text-[10px] bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
-                                            2 Tokens
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium whitespace-nowrap ${isPro ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-black/5 dark:bg-white/10 text-slate-500 dark:text-slate-400'}`}>
+                                            {isPro ? 'Unlimited' : '2 Tokens'}
                                         </span>
                                     </button>
                                 </div>
