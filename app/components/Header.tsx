@@ -19,6 +19,7 @@ interface HeaderProps {
     onShowThemeModal: () => void;
     activeTheme: Theme;
     onImportBackup: (file: File) => void;
+    isPro?: boolean;
 }
 
 export default function Header({
@@ -32,7 +33,8 @@ export default function Header({
     onSavedSchedules,
     onShowThemeModal,
     activeTheme,
-    onImportBackup
+    onImportBackup,
+    isPro = false
 }: HeaderProps) {
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
@@ -68,7 +70,14 @@ export default function Header({
                                 </div>
                             )}
                             <div className="text-xs text-left">
-                                <div className="font-bold text-slate-700 dark:text-slate-200 group-hover/profile:text-slate-900 dark:group-hover/profile:text-white transition-colors">{session?.user?.name}</div>
+                                <div className="font-bold text-slate-700 dark:text-slate-200 group-hover/profile:text-slate-900 dark:group-hover/profile:text-white transition-colors flex items-center gap-1">
+                                    {session?.user?.name}
+                                    {isPro && (
+                                        <span className="bg-gradient-to-r from-emerald-400 to-teal-500 text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-sm ml-1 flex items-center gap-0.5" title="Pro Subscriber">
+                                            <Gem size={8} className="fill-white" /> PRO
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{session?.user?.email}</div>
                             </div>
                         </div>

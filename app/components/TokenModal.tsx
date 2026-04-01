@@ -4,7 +4,7 @@ import { XCircle, Gem, PlayCircle, CreditCard } from 'lucide-react';
 interface TokenModalProps {
     onClose: () => void;
     onStartAdFlow: () => void;
-    onBuyTokens: (packageId: 'starter' | 'pro') => void;
+    onBuyTokens: (packageId: 'starter' | 'pack500' | 'pro') => void;
     isPro?: boolean;
 }
 
@@ -37,20 +37,30 @@ export default function TokenModal({ onClose, onStartAdFlow, onBuyTokens, isPro 
                         </div>
                         <div className="grid grid-cols-2 gap-4 shrink-0">
                             <div className="border border-slate-200 dark:border-slate-700 p-4 rounded-2xl text-center opacity-80 hover:opacity-100 transition-opacity hover:shadow-md bg-white dark:bg-slate-800/50">
-                                <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm">Starter</h3>
+                                <h3 className="font-bold text-slate-700 dark:text-slate-300 text-sm">Starter Pack</h3>
                                 <div className="text-2xl font-black text-slate-800 dark:text-white my-1">฿35</div>
-                                <p className="text-xs text-slate-400 mb-3">100 Tokens</p>
+                                <p className="text-xs text-slate-400 mb-3 font-bold">100 Tokens</p>
                                 <button onClick={() => onBuyTokens('starter')} className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-200 w-full py-2 rounded-xl font-bold text-xs transition-colors cursor-pointer">Buy</button>
                             </div>
-                            <div className={`border-2 ${isPro ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-indigo-500 bg-white dark:bg-slate-800'} p-4 rounded-2xl text-center relative shadow-xl transform scale-105 transition-transform ${isPro ? 'opacity-80' : 'hover:scale-110'}`}>
+                            <div className="border border-indigo-200 dark:border-indigo-800 p-4 rounded-2xl text-center shadow-md bg-indigo-50/50 dark:bg-indigo-900/20 hover:shadow-lg transition-shadow">
+                                <h3 className="font-bold text-indigo-800 dark:text-indigo-300 text-sm">Mega Pack</h3>
+                                <div className="text-2xl font-black text-indigo-700 dark:text-indigo-400 my-1">฿120</div>
+                                <p className="text-xs text-indigo-500 mb-3 font-bold">500 Tokens</p>
+                                <button onClick={() => onBuyTokens('pack500')} className="bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-800 dark:hover:bg-indigo-700 text-indigo-700 dark:text-indigo-200 w-full py-2 rounded-xl font-bold text-xs transition-colors cursor-pointer">Buy</button>
+                            </div>
+                        </div>
+
+                        {/* Subscription Pack */}
+                        <div className="shrink-0 mt-2">
+                            <div className={`border-2 ${isPro ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/10' : 'border-indigo-500 bg-white dark:bg-slate-800'} p-5 rounded-2xl text-center relative shadow-xl transform scale-100 md:scale-105 transition-transform ${isPro ? 'opacity-80' : 'hover:scale-105 md:hover:scale-110'}`}>
                                 <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-sm ${isPro ? 'bg-emerald-500' : 'bg-gradient-to-r from-pink-500 to-indigo-500'}`}>{isPro ? 'ACTIVE' : 'BEST VALUE'}</div>
-                                <h3 className={`font-bold text-sm mt-1 ${isPro ? 'text-emerald-900 dark:text-emerald-300' : 'text-indigo-900 dark:text-white'}`}>Unlimited Access</h3>
-                                <div className={`text-2xl font-black my-1 ${isPro ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>฿99 / 30 days</div>
-                                <p className={`text-xs mb-3 font-bold ${isPro ? 'text-emerald-500' : 'text-indigo-400'}`}>All AI Features</p>
-                                <button 
-                                    onClick={() => !isPro && onBuyTokens('pro')} 
+                                <h3 className={`font-black text-lg mt-1 ${isPro ? 'text-emerald-900 dark:text-emerald-300' : 'text-indigo-900 dark:text-white'}`}>Pro Subscription</h3>
+                                <div className={`text-2xl font-black my-1 ${isPro ? 'text-emerald-600 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>฿99 <span className="text-sm font-bold opacity-70">/ 30 days</span></div>
+                                <p className={`text-xs mb-4 font-bold ${isPro ? 'text-emerald-500' : 'text-indigo-400'}`}>UNLIMITED AI FEATURES</p>
+                                <button
+                                    onClick={() => !isPro && onBuyTokens('pro')}
                                     disabled={isPro}
-                                    className={`${isPro ? 'bg-emerald-200 text-emerald-800 cursor-not-allowed dark:bg-emerald-900/50 dark:text-emerald-400' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg animate-pulse cursor-pointer'} w-full py-2 rounded-xl font-bold text-xs transition-all active:scale-95`}
+                                    className={`${isPro ? 'bg-emerald-200 text-emerald-800 cursor-not-allowed dark:bg-emerald-900/50 dark:text-emerald-400' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg animate-pulse cursor-pointer'} w-full py-3 rounded-xl font-black text-sm transition-all active:scale-95`}
                                 >
                                     {isPro ? 'Current Plan (Active)' : 'Subscribe Now'}
                                 </button>

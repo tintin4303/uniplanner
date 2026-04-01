@@ -15,14 +15,16 @@ const nextConfig: NextConfig = {
   },
 };
 
-// @ts-ignore: next-pwa does not have types
+// @ts-expect-error: next-pwa does not have types
 import withPWAInit from 'next-pwa';
+
+const isDev = process.env.NODE_ENV === 'development';
 
 const withPWA = withPWAInit({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
+  disable: isDev,
   register: true,
   skipWaiting: true,
 });
 
-export default withPWA(nextConfig);
+export default isDev ? nextConfig : withPWA(nextConfig);

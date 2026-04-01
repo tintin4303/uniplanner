@@ -35,7 +35,7 @@ export function useTokens(session: Session | null, status: string, subjects: Sub
         }
     };
 
-    const handleBuyTokens = async (packageId: 'starter' | 'pro') => {
+    const handleBuyTokens = async (packageId: 'starter' | 'pack500' | 'pro') => {
         if (status !== 'authenticated') {
             return { success: false, error: "Please login first." };
         }

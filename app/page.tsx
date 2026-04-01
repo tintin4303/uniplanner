@@ -427,7 +427,7 @@ export default function Home() {
         }
     };
 
-    const handleBuyTokensWrapper = async (packageId: 'starter' | 'pro') => {
+    const handleBuyTokensWrapper = async (packageId: 'starter' | 'pack500' | 'pro') => {
         const result = await handleBuyTokens(packageId);
         if (!result.success) {
             addToast(result.error || "Purchase failed", 'error');
@@ -647,6 +647,7 @@ export default function Home() {
                     onShowThemeModal={() => setShowThemeModal(true)}
                     activeTheme={activeTheme}
                     onImportBackup={handleImportBackup}
+                    isPro={isPro}
                 />
 
 

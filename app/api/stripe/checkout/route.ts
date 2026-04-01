@@ -29,7 +29,11 @@ export async function POST(req: Request) {
     let isProAccess = false;
     let mode: Stripe.Checkout.SessionCreateParams.Mode = "payment";
 
-    if (packageId === 'pro') {
+    if (packageId === 'pack500') {
+      priceAmount = 12000; // 120.00 THB
+      tokenAmount = 500;
+      packageName = "Pro Token Pack (500)";
+    } else if (packageId === 'pro') {
       priceAmount = 9900; // 99.00 THB
       tokenAmount = 0; // Unlimited
       packageName = "Planner Pro (30 Days)";
