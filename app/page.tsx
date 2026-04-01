@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Gem } from 'lucide-react';
+import { Sparkles, Gem, BookOpen, X, Library } from 'lucide-react';
 import { useSession, signIn, signOut } from "next-auth/react";
 
 // Components
@@ -41,6 +41,7 @@ export default function Home() {
     const { subjects, isLoaded, saving, persistData, clearData } = useScheduleData();
 
     // UI State
+    const [isLibraryOpen, setIsLibraryOpen] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingName, setEditingName] = useState<string | null>(null);
     const [exportingId, setExportingId] = useState<string | null>(null);
@@ -632,7 +633,35 @@ export default function Home() {
                 </div>
             )}
 
-            <div className="max-w-[1600px] mx-auto">
+            <div className="max-w-[1920px] mx-auto">
+                {/* Derived values for the Floating Pill */}
+                {(() => {
+                    const activeSubjectsCount = new Set(subjects.filter(s => s.active).map(s => s.name)).size;
+                    const totalActiveCredits = Array.from(new Set(subjects.filter(s => s.active).map(s => s.name)))
+                        .reduce((sum, name) => sum + (subjects.find(s => s.name === name)?.credits || 0), 0);
+
+                    return (
+                        <>
+                            {/* FLOATING ACTION PILL */}
+                            <button
+                                onClick={() => setIsLibraryOpen(true)}
+                                className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[45] bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/40 dark:border-slate-800/50 shadow-2xl hover:shadow-indigo-500/20 rounded-full p-2 pr-4 md:pr-6 flex items-center gap-3 md:gap-4 transition-all hover:scale-[1.02] active:scale-95 group overflow-hidden cursor-pointer"
+                            >
+                                <div className={`p-3 rounded-full ${activeTheme.colors.header} text-white shadow-inner flex items-center justify-center shrink-0`}>
+                                    <Library size={22} className="group-hover:rotate-12 transition-transform duration-300" />
+                                </div>
+                                <div className="flex flex-col items-start min-w-[50px] md:min-w-[100px] text-left">
+                                    <span className="hidden sm:block text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-100">Library Drawer</span>
+                                    <div className="flex items-center gap-1.5 sm:gap-2 mt-0 sm:mt-0.5">
+                                       <span className={`text-[10px] md:text-[11px] font-bold ${activeTheme.colors.accent}`}>{activeSubjectsCount} <span className="opacity-70 font-medium text-slate-600 dark:text-slate-400">Classes</span></span>
+                                       <span className="text-slate-300 dark:text-slate-600">•</span>
+                                       <span className={`text-[10px] md:text-[11px] font-bold ${activeTheme.colors.accent}`}>{totalActiveCredits} <span className="opacity-70 font-medium text-slate-600 dark:text-slate-400">Credits</span></span>
+                                    </div>
+                                </div>
+                            </button>
+                        </>
+                    );
+                })()}
 
                 {/* --- HEADER --- */}
                 <Header
@@ -651,16 +680,61 @@ export default function Home() {
                 />
 
 
-                {/* --- CONTENT AREA --- */}
-                <div className="flex flex-col xl:flex-row gap-8 items-start">
+                {/* --- FULL WIDTH CONTENT AREA --- */}
+                <div className="flex flex-col gap-8 items-start w-full">
+                    <div className="w-full flex-1 min-w-0">
+                        <ScheduleList
+                            schedules={generatedSchedules}
+                            onExportStart={handleExportStart}
+                            onExportEnd={handleExportEnd}
+                            exportingId={exportingId}
+                            onSave={handleSaveSchedule}
+                            onShare={handleShare}
+                            theme={activeTheme}
+                            comparisonSchedule={comparisonSubjects}
+                            conflicts={conflicts}
+                            onRoast={handleRoast}
+                            onVibeCheck={handleVibeCheck}
+                            onSurvivalGuide={handleSurvivalGuide}
+                            onFriendMatch={() => setShowFriendMatchModal(true)}
+                            isPro={isPro}
+                        />
+                    </div>
+                </div>
 
-                    {/* SIDEBAR / TOP BAR */}
-                    <div className="w-full xl:w-[400px] flex-shrink-0 space-y-6">
+                {/* SIDE DRAWER OVERLAY */}
+                <div
+                    className={`fixed inset-0 z-[48] bg-slate-900/10 dark:bg-slate-950/40 backdrop-blur-[2px] transition-opacity duration-300 ${isLibraryOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                    onClick={() => setIsLibraryOpen(false)}
+                />
 
-                        {/* Smart AI Button */}
+                {/* SIDE DRAWER PANEL */}
+                <div
+                    className={`fixed top-0 right-0 h-full w-full sm:w-[420px] shadow-2xl z-50 bg-slate-50 dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 transform transition-transform duration-500 ease-out flex flex-col ${isLibraryOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                >
+                    {/* Drawer Header */}
+                    <div className="p-4 md:p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shrink-0">
+                        <h2 className="font-black text-xl flex items-center gap-2 tracking-tight text-slate-800 dark:text-slate-100">
+                            <BookOpen className={activeTheme.colors.accent} size={24} /> Subject Library
+                        </h2>
+                        <button
+                            onClick={() => setIsLibraryOpen(false)}
+                            className="p-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+                    
+                    {/* Drawer Body - Scrollable */}
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scrollbar flex flex-col gap-6">
+                        
+                        {/* SMART GENERATE BUTTON (Moved inside Drawer) */}
                         <div
-                            onClick={() => setShowSmartGenModal(true)}
-                            className={`${activeTheme.colors.header} p-4 rounded-2xl shadow-xl ${activeTheme.colors.headerText} cursor-pointer hover:scale-[1.02] transition-transform flex items-center gap-4 relative overflow-hidden group`}
+                            onClick={() => {
+                                setIsLibraryOpen(false);
+                                setShowSmartGenModal(true);
+                            }}
+                            className={`${activeTheme.colors.header} p-4 rounded-2xl shadow-xl ${activeTheme.colors.headerText} cursor-pointer hover:scale-[1.02] transition-transform flex items-center gap-4 relative overflow-hidden group shrink-0`}
                         >
                             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             <div className="bg-white/20 p-2 rounded-lg">
@@ -725,26 +799,6 @@ export default function Home() {
                                 validSchedulesCount={generatedSchedules.length}
                             />
                         )}
-                    </div>
-
-                    {/* MAIN CONTENT - Generated Schedules */}
-                    <div className="w-full flex-1 min-w-0">
-                        <ScheduleList
-                            schedules={generatedSchedules}
-                            onExportStart={handleExportStart}
-                            onExportEnd={handleExportEnd}
-                            exportingId={exportingId}
-                            onSave={handleSaveSchedule}
-                            onShare={handleShare}
-                            theme={activeTheme}
-                            comparisonSchedule={comparisonSubjects}
-                            conflicts={conflicts}
-                            onRoast={handleRoast}
-                            onVibeCheck={handleVibeCheck}
-                            onSurvivalGuide={handleSurvivalGuide}
-                            onFriendMatch={() => setShowFriendMatchModal(true)}
-                            isPro={isPro}
-                        />
                     </div>
                 </div>
 

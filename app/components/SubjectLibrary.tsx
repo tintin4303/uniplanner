@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { CheckCircle, Edit2, Trash2, BookOpen, Plus } from 'lucide-react';
+import { CheckCircle, Edit2, Trash2, BookOpen, Plus, RotateCcw } from 'lucide-react';
 import { BRAND } from '@/app/lib/constants';
 import { Subject } from '@/app/lib/types';
 
@@ -44,10 +44,12 @@ export default function SubjectLibrary({ subjects, onToggleGroup, onToggleSectio
         <div className="flex justify-between items-center mb-4">
           <h3 className={`font-bold text-sm uppercase opacity-50 text-slate-800 dark:text-slate-200`}>Library</h3>
           <div className="flex items-center gap-2">
-            <button onClick={onAddSubject} className={`${BRAND.primary} ${BRAND.primaryHover} text-white px-4 py-1.5 rounded-full font-bold text-xs shadow-md flex items-center gap-1.5 transition-transform active:scale-95 cursor-pointer`}>
-              <Plus size={14} /> Add Subject
+            <button onClick={onReset} className="w-8 h-8 rounded-full bg-red-100 hover:bg-red-500 text-red-500 hover:text-white dark:bg-red-500/20 dark:hover:bg-red-500 dark:text-red-400 dark:hover:text-white flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer" title="Reset Library">
+              <RotateCcw size={14} strokeWidth={2.5} />
             </button>
-            <button onClick={onReset} className="text-xs text-red-400 hover:text-red-600 transition-colors cursor-pointer">Reset</button>
+            <button onClick={onAddSubject} className={`w-8 h-8 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-md flex items-center justify-center transition-all active:scale-95 cursor-pointer`} title="Add Subject">
+              <Plus size={16} strokeWidth={3} />
+            </button>
           </div>
         </div>
 
